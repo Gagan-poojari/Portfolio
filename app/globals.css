@@ -2,20 +2,168 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+
+@font-face {
+  font-family: 'Righteous';
+  src: url('/fonts/righteous/Righteous-Regular.ttf') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Transformers Movie';
+  src: url('/fonts/transformers_movie/Transformers\ Movie.ttf') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+body {
+  /* font-family: "Playfair Display", serif;
+  font-family: "Open Sans", sans-serif; */
+  /* font-family: "Cinzel", serif; */
+  /* background-color: #1c1c25; */
+  font-family: 'Righteous';
+
+  background-color: #ffffff;
+}
+
+
+
+.transformers{
+  font-family: 'Transformers Movie', sans-serif;
+}
+
+.smooth{
+  transition: all ease-in-out 0.5s;
+}
+.smooth2{
+  transition: all ease-in-out 0.35s;
+}
+
+.navshad{
+  box-shadow: 0px 0px 7px 2px #0000002c;
+}
+.crdshdw:hover{
+  box-shadow: 0px 0px 7px 2px #ffffff;
+}
+
+.befaft::after{
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: #000000;
+}
+
+.befaft:hover::after{
+  animation: wztoh 0.3s ease-in-out 1;
+  width: 100%;
+}
+
+.befaft:active:after{
+  background: #000000;
+}
+
+@keyframes wztoh {
+  from {
+      width: 0;
+  }
+  to {
+      width: 100%;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+.asushad{
+  box-shadow: 0px 0px 7px 2px #0000007b;
 }
+
+/* Animation for central image (split personality image) */
+
+.glitch-wrapper {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.glitch-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.glitch::before,
+.glitch::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('/splitpersfc.jpg') no-repeat center;
+  background-size: cover;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.glitch::before {
+  transform: translate(2px, -2px);
+  filter: contrast(2) brightness(1.2) saturate(1.5) drop-shadow(0 0 2px red);
+  animation: rgbShift 0.3s infinite;
+  opacity: 0.7;
+}
+
+.glitch::after {
+  transform: translate(-2px, 2px);
+  filter: contrast(2) brightness(1.2) saturate(1.5) drop-shadow(0 0 2px cyan);
+  animation: verticalShake 0.2s infinite;
+  opacity: 0.7;
+}
+
+@keyframes rgbShift {
+  0% { transform: translate(0px, 0px); }
+  20% { transform: translate(3px, -3px); }
+  40% { transform: translate(-3px, 3px); }
+  60% { transform: translate(2px, -2px); }
+  80% { transform: translate(-2px, 2px); }
+  100% { transform: translate(0px, 0px); }
+}
+
+@keyframes verticalShake {
+  0% { transform: translateY(0); }
+  25% { transform: translateY(-1px); }
+  50% { transform: translateY(1px); }
+  75% { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
+
+/* CRT Scanlines */
+.glitch-img::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.2) 0px,
+    rgba(0, 0, 0, 0.2) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+}
+
+
+
