@@ -9,37 +9,29 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-
 @font-face {
   font-family: 'Righteous';
-  src: url('/fonts/righteous/Righteous-Regular.ttf') format('woff2');
+  src: url('/fonts/righteous/Righteous-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Transformers Movie';
-  src: url('/fonts/transformers_movie/Transformers\ Movie.ttf') format('woff2');
+  src: url("/fonts/transformers_movie/Transformers Movie.ttf") format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 
-
 body {
-  /* font-family: "Playfair Display", serif;
-  font-family: "Open Sans", sans-serif; */
-  /* font-family: "Cinzel", serif; */
-  /* background-color: #1c1c25; */
   font-family: 'Righteous';
-
   background-color: #ffffff;
 }
 
-
-
-.transformers{
+.transformers {
   font-family: 'Transformers Movie', sans-serif;
 }
+
 
 .smooth{
   transition: all ease-in-out 0.5s;
