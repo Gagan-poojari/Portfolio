@@ -9,11 +9,12 @@ const Part3 = () => {
         alt="under construction"
         width={200}
         height={200}
-        className="sm:h-[500px] sm:w-[500px] h-[200px] w-[200px]"
+        className="sm:h-[400px] sm:w-[400px] h-[200px] w-[200px]"
         priority
         />
         <div>Great Things take time :)</div>
-        <div className='sm:text-4xl text-2xl'>Projects section, experience section, contact section and many more to be added</div>
+        <div className='sm:text-2xl text-xl'>Projects section, experience section, contact section and many more to be added</div>
+        <div>Will be done in a couple of days</div>
     </div>
   )
 }
