@@ -13,6 +13,7 @@ const Part3 = () => {
         priority
         />
         <div>Great Things take time :)</div>
+        <div className='sm:text-4xl text-2xl'>Projects section, experience section, contact section and many more to be added</div>
     </div>
   )
 }
