@@ -26,11 +26,11 @@ export default function GlitchImage() {
       className={`glitch-wrapper ${glitch ? 'glitch' : ''}`}
     >
       <Image
-        src="/splitpersfc.jpg"
-        alt="Split Persona"
+        src="/me-nobg.png"
+        alt="*****"
         width={400}
         height={400}
-        className="glitch-img"
+        className="glitch-img lg:w-[330px] w-[220px]"
         priority
       />
     </motion.div>

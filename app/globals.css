@@ -3,10 +3,22 @@
 @tailwind utilities;
 
 
-
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* scroll-behavior: smooth; */
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #ffffff #000000f4;
+}
+
+@font-face {
+  font-family: 'Transformers Movie';
+  src: url("/fonts/transformers_movie/Transformers Movie.ttf") format('truetype');
+  font-weight: normal;
+  font-style: normal;
 }
 
 @font-face {
@@ -17,15 +29,24 @@ html {
 }
 
 @font-face {
-  font-family: 'Transformers Movie';
-  src: url("/fonts/transformers_movie/Transformers Movie.ttf") format('truetype');
+  font-family: 'ClashDisplay';
+  src: url('/fonts/ClashDisplay/ClashDisplay-Regular.otf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 
+
 body {
-  font-family: 'Righteous';
+  /* font-family: 'Righteous'; */
+  font-family: 'ClashDisplay';
   background-color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.custom-scrollbar1 {
+  scrollbar-color: #383838 #000000;
+  scrollbar-width: thin;
+  
 }
 
 .transformers {
@@ -54,7 +75,7 @@ body {
   left: 0;
   width: 0%;
   height: 2px;
-  background: #000000;
+  background: #ffffff;
 }
 
 .befaft:hover::after{
@@ -63,7 +84,7 @@ body {
 }
 
 .befaft:active:after{
-  background: #000000;
+  background: #ffffff;
 }
 
 @keyframes wztoh {
@@ -78,6 +99,9 @@ body {
 .asushad{
   box-shadow: 0px 0px 7px 2px #0000007b;
 }
+.customshadow {
+  box-shadow: 0px 0px 10px 4px #00000028;
+}
 
 /* Animation for central image (split personality image) */
 
@@ -88,7 +112,7 @@ body {
 }
 
 .glitch-img {
-  width: 100%;
+  /* width: 100%; */
   height: auto;
   display: block;
   image-rendering: pixelated;
@@ -102,7 +126,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('/splitpersfc.jpg') no-repeat center;
+  background: url('/me-nobg.png') no-repeat center;
   background-size: cover;
   pointer-events: none;
   mix-blend-mode: screen;
@@ -157,5 +181,29 @@ body {
   pointer-events: none;
 }
 
+.mask-half-top {
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
 
+@keyframes slide {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
 
+.animate-slide {
+  animation: slide 30s linear infinite;
+}
+
+/* for sidebar */
+.shadow-neomorph-icon {
+  box-shadow: 2px 2px 5px #b9c0cb, -6px -6px 12px #ffffff;
+}
+
+.inset-shadow {
+  box-shadow: inset 0 0 4px 2px #00000046, inset -6px -6px 12px #ffffff;
+}

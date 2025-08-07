@@ -1,16 +1,36 @@
-import Image from "next/image";
-import NavBar from "./components/NavBar";
-import Part1 from "./components/Part1";
-import Part2 from "./components/Part2";
-import Part3 from "./components/Part3";
+import MainFC from "./components/MainFC";
+import SlideBar from "./components/SlideBar";
+// import HeroSection from "./components/HeroSection";
+import { StarsBackground } from "./components/StarBG";
+import SkillsSection from "./components/SkillsSection";
+import CourseCarousel from "./components/CourseCarousel";
+import ProjectSection from "./components/ProjectSection";
+import Navbar from "./components/NavBar";
+import Contact from "./components/Contact";
 
 export default function Home() {
   return (
     <div>
-      <NavBar />
-      <Part1 />
-      <Part2 />
-      <Part3 />
+      {/* <HeroSection /> */}
+      <StarsBackground starColor="#ffffff" speed={60} factor={0.08}>
+        <div className="relative z-10 flex items-center justify-center min-h-screen text-white">
+          <MainFC />
+        </div>
+      </StarsBackground>
+      <Navbar />
+      <SlideBar />
+      <div className="h-[2px] bg-[#000000bc]"></div>
+      <SkillsSection />
+      <CourseCarousel />
+      <div className="h-[2px] bg-[#000000bc]"></div>
+      <ProjectSection />
+      <div className="h-[2px] bg-[#000000bc]"></div>
+
+      <StarsBackground starColor="#ffffff" speed={60} factor={0.08}>
+        <div className="relative z-10 flex items-center justify-center min-h-screen text-white">
+          <Contact />
+        </div>
+      </StarsBackground>
     </div>
   );
 }
