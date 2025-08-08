@@ -26,7 +26,7 @@ export default function GlitchImage() {
       className={`glitch-wrapper ${glitch ? 'glitch' : ''}`}
     >
       <Image
-        src="/me-nobg.png"
+        src="/me-removebg-preview.png"
         alt="*****"
         width={400}
         height={400}
