@@ -169,7 +169,7 @@ const ProjectSection = () => {
         className="relative z-2 mb-10 text-4xl font-medium tracking-tight sm:text-5xl md:text-6xl text-balance text-center"
       >
         <p className="mb-3 text-xs font-normal tracking-widest text-[#fff] dark:text-white/70 uppercase md:text-sm">
-          FEATURED CASE STUDIES
+          BUILT WITH A PURPOSE
         </p>
         <span className='text-[#fff]'>
           <span>MY &nbsp;</span>

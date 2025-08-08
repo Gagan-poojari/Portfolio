@@ -46,13 +46,13 @@ const letter = {
   visible: { opacity: 1, y: 0 },
 };
 
-  const [heading, setHeading] = useState('HEY THERE, WELCOME TO MY PORTFOLIO...');
+  const [heading, setHeading] = useState('WELCOME TO MY PORTFOLIO...');
   const [hasSwitched, setHasSwitched] = useState(false);
 
   useEffect(() => {
     if (!hasSwitched) {
       const timeout = setTimeout(() => {
-        setHeading("I ' M GAGAN POOJARI");
+        setHeading("I'M GAGAN POOJARI");
         setHasSwitched(true);
       }, 2500);
       return () => clearTimeout(timeout);
@@ -61,8 +61,8 @@ const letter = {
 
 
   return (
-    <div className='min-h-screen flex flex-col justify-center items-center lg:gap-20 p-10'>
-      <motion.div
+    <div className='min-h-screen flex flex-col justify-center items-center lg:gap-20 p-10 pt-24'>
+      {/* <motion.div
       initial="hidden"
       animate="visible"
       variants={sentence}
@@ -71,7 +71,7 @@ const letter = {
       <h1 style={{
           textShadow:
             '0px 4px 8px rgba(255,255,255,.05),0px 8px 30px rgba(255,255,255,.25)',
-        }} className="text-4xl m-10 lg:m-0 md:text-6xl lg:text-5xl font-extrabold text-[#ffffff]">
+        }} className="text-2xl mt-14 mb-7 lg:m-0 md:text-4xl lg:text-5xl font-extrabold text-[#ffffff]">
         <Balancer>
           {heading.split('').map((char, index) => (
             <motion.span key={index} variants={letter}>
@@ -80,7 +80,7 @@ const letter = {
           ))}
         </Balancer>
       </h1>
-    </motion.div>
+    </motion.div> */}
         
       <div className="relative z-10 flex flex-col lg:flex-row justify-center items-center gap-10 px-4 overflow-hidden">
 
@@ -189,6 +189,25 @@ const letter = {
           </div>
         </Tilt>
       </div>
+      <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={sentence}
+      className="flex flex-col items-center justify-center text-center px-6"
+    >
+      <h1 style={{
+          textShadow:
+            '0px 4px 8px rgba(255,255,255,.05),0px 8px 30px rgba(255,255,255,.25)',
+        }} className="text-2xl mt-14 lg:m-0 md:text-4xl lg:text-5xl font-extrabold text-[#f4f4f4] transformers">
+        <Balancer>
+          {heading.split('').map((char, index) => (
+            <motion.span key={index} variants={letter}>
+              {char === ' ' ? '\u00A0' : char}
+            </motion.span>
+          ))}
+        </Balancer>
+      </h1>
+    </motion.div>
     </div>
   )
 }

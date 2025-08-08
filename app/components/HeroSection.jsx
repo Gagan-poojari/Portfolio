@@ -39,7 +39,7 @@ const HeroSection = () => {
   ]
 
   return (
-    <div className="min-h-screen w-full bg-black text-white flex flex-col items-center justify-center relative overflow-hidden px-4 py-20">
+    <div className="lg:min-h-screen w-full bg-black text-white flex flex-col items-center justify-center relative overflow-hidden px-4 py-20">
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#297bc9]/10 via-transparent to-[#c7061c]/10" />
 
       <Tilt tiltMaxAngleX={10} tiltMaxAngleY={10} scale={1.05} glareEnable={true} glareMaxOpacity={0.2}>

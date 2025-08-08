@@ -3,11 +3,34 @@ import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import emailjs from '@emailjs/browser';
 import toast, { Toaster } from 'react-hot-toast';
+import { FaGithub, FaLinkedin, FaTwitter, FaInstagram } from 'react-icons/fa';
 
 const Contact = () => {
     const formRef = useRef();
     const [status, setStatus] = useState('');
 
+    const socials = [
+        {
+            name: 'GitHub2',
+            url: 'https://github.com/Gagan-poojari',
+            icon: <FaGithub />,
+        },
+        // {
+        //     name: 'GitHub2',
+        //     url: 'https://github.com/Gagan-poojari',
+        //     icon: <FaGithub />,
+        // },
+        {
+            name: 'LinkedIn',
+            url: 'https://www.linkedin.com/in/gagan-poojari-840744319/',
+            icon: <FaLinkedin />,
+        },
+        // {
+        //     name: 'Instagram',
+        //     url: 'https://www.instagram.com/gagan__poojari',
+        //     icon: <FaInstagram />,
+        // },
+    ];
     const sendEmail = (e) => {
         e.preventDefault();
         setStatus('sending');
@@ -85,6 +108,35 @@ const Contact = () => {
                     </motion.button>
                 </form>
             </motion.div>
+
+
+            <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className="flex gap-5 lg:hidden justify-center"
+            >
+                {socials.map((social, index) => (
+                    <motion.a
+                        key={index}
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={social.name}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                            delay: index * 0.1 + 0.3,
+                            duration: 0.1,
+                            ease: 'easeOut',
+                        }}
+                        className="text-[#555] text-xl p-3 bg-[#000000] rounded-full border border-[#ffffff69] transition-all duration-300 hover:text-[#ffffff]"
+                    >
+                        {social.icon}
+                    </motion.a>
+                ))}
+            </motion.div>
+
         </section>
     );
 };

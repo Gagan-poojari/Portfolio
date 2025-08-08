@@ -55,10 +55,10 @@ export default function SkillsSection() {
           textShadow:
             '0px 4px 8px rgba(255,255,255,.05),0px 8px 30px rgba(255,255,255,.25)',
         }}
-        className="relative text-4xl font-medium tracking-tight sm:text-5xl md:text-6xl mt-10 text-balance text-center z-30 -translate-y-6 md:-translate-y-10 text-[#fff]"
+        className="relative text-3xl font-medium tracking-tight sm:text-5xl md:text-6xl mt-10 text-balance text-center z-30 -translate-y-6 md:-translate-y-10 text-[#fff]"
       >
         <span className="text-gradient bg-clip-text animate-gradient-x font-nyght tracking-wide">
-          THE SECRET SAUCE
+          UNDER THE HOOD
         </span>
       </h2>
       <div className="relative mx-auto size-fit overflow-hidden h-[200px]">

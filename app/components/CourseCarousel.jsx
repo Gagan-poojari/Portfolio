@@ -35,7 +35,7 @@ const courses = [
 
 const CourseCarousel = () => {
   return (
-    <section className="w-full bg-[#000000] py-10 px-4 overflow-hidden">
+    <section id="courses" className="w-full bg-[#000000] py-10 px-4 overflow-hidden">
 
       <p className="mb-3 text-xs font-normal tracking-widest text-center text-black/80 dark:text-white/70 uppercase md:text-sm">
         Courses & Certifications (click to verify)

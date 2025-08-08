@@ -5,10 +5,9 @@ import { FaBars, FaTimes } from 'react-icons/fa';
 import Link from 'next/link';
 
 const navLinks = [
-  { name: 'Home', href: '/' },
-  { name: 'Projects', href: '#projects' },
   { name: 'Skills', href: '#skills' },
-  { name: 'About', href: '#about' },
+  { name: 'Courses', href: '#courses' },
+  { name: 'Projects', href: '#projects' },
   { name: 'Contact', href: '#contact' },
 ];
 
@@ -68,7 +67,7 @@ const NavBar = () => {
         transition={{ duration: 0.6, ease: 'easeInOut' }}
         className={`flex items-center justify-between text-white backdrop-blur-md border border-white/10 rounded-full ${
           shouldCollapse && !isOpen
-            ? 'aspect-square p-0 justify-center items-center border border-[#fff]/50'
+            ? 'aspect-square p-0 justify-center items-center border border-[#fff]/60'
             : 'px-6 py-3'
         }`}
       >
