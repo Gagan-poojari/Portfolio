@@ -202,7 +202,7 @@ const ProjectSection = () => {
 
           <div className='flex text-[#fff] items-center gap-10'>
             <ProjectCard
-              href="/projects/snippix"
+              href="https://github.com/Gagan-poojari/Sri-Udupi-Food-Hub/tree/main"
               title="A restaurant webiste meticulously designed in accordance to the beautiful culture and flavours of Udupi cuisine."
               imgSrc="/projects/sufh.png"
               shadowColor="#14B8A6"
@@ -210,7 +210,7 @@ const ProjectSection = () => {
               textColor="text-teal-300"
             />
             <ProjectCardDesc
-              href="https://www.fortuneudupi.in/"
+              href="https://github.com/Gagan-poojari/Sri-Udupi-Food-Hub/tree/main"
               title={SufhData.title}
               description={SufhData.description}
               features={SufhData.features}
