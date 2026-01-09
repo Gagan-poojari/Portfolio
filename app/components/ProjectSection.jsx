@@ -45,24 +45,21 @@ const ProjectSection = () => {
       { name: 'GitHub', icon: 'https://cdn.simpleicons.org/github' },
       { name: 'EmailJS', icon: 'https://cdn.simpleicons.org/emailjs' },
     ],
-    PlayureTechStack: [
+    NammaBenakaTechStack: [
       { name: 'ReactJS', icon: 'https://cdn.simpleicons.org/react' },
-      { name: 'NodeJS', icon: 'https://cdn.simpleicons.org/nodejs' },
       { name: 'NextJS', icon: 'https://cdn.simpleicons.org/nextdotjs' },
+      { name: 'NodeJS', icon: 'https://cdn.simpleicons.org/nodejs' },
       { name: 'ExpressJS', icon: 'https://cdn.simpleicons.org/express' },
       { name: 'MongoDB', icon: 'https://cdn.simpleicons.org/mongodb' },
       { name: 'Mongoose', icon: 'https://cdn.simpleicons.org/mongoose' },
-      { name: 'JWT', icon: 'https://cdn.simpleicons.org/jwt' },
-      { name: 'Bcrypt', icon: 'https://cdn.simpleicons.org/bcrypt' },
-      { name: 'CORS', icon: 'https://cdn.simpleicons.org/cors' },
-      { name: "Axios", icon: 'https://cdn.simpleicons.org/axios' },
+      { name: 'JWT', icon: 'https://cdn.simpleicons.org/jsonwebtokens' },
+      { name: 'Axios', icon: 'https://cdn.simpleicons.org/axios' },
       { name: 'Tailwind CSS', icon: 'https://cdn.simpleicons.org/tailwindcss' },
       { name: 'Framer Motion', icon: 'https://cdn.simpleicons.org/framer' },
-      { name: 'SwiperJS', icon: 'https://cdn.simpleicons.org/swiper' },
-      { name: 'Frame Motion', icon: 'https://cdn.simpleicons.org/framer' },
       { name: 'Git', icon: 'https://cdn.simpleicons.org/git' },
       { name: 'GitHub', icon: 'https://cdn.simpleicons.org/github' },
     ],
+
     PortfolioTechStack: [
       { name: 'ReactJS', icon: 'https://cdn.simpleicons.org/react' },
       { name: 'NextJS', icon: 'https://cdn.simpleicons.org/nextdotjs' },
@@ -124,40 +121,37 @@ const ProjectSection = () => {
     ],
   };
 
-  const PlayureData = {
-    title: 'Playure - A sprorts organization',
+  const NammaBenakaData = {
+    title: 'NammaBenaka - Smarter Loan Management Platform',
     description:
-      "Building Playure, a group-freelance project alongside couple of friends to revolutionize sporting by creating seamless connectivity and networking for athletes and coaches.",
+      'Built NammaBenaka, a full-stack fintech platform focused on simplifying loan access for individuals and businesses through a fast, transparent, and user-centric digital experience.',
     features: [
-      'Under development with React, Node.js, and Express.js to create a dynamic and responsive user interface.',
-        'Building the website using React, Next.js, and Tailwind CSS.',
-      'Implentation of jwt for authentication and authorization.',
-      'Integration of mongoDB for efficient data storage and retrieval.',
-      'Used axios for efficient HTTP requests and responses.',
-      'Uzed cors for cross-origin resource sharing.',
-      'Used jwt for token authentication and authorization.',
-      'Used bcrypt for password encryption.',
-      'Utilization of Tailwind CSS for efficient styling and responsive design.',
-      'Implementation of Next.js for efficient server-side rendering and routing.',
-      'Utilization of Framer Motion for smooth animations and transitions.',
-      'Utilization of Git for version control and collaboration.',
+      'Designed and developed a full-stack loan management platform using React, Next.js, Node.js, and Express.',
+      'Implemented secure authentication and role-based authorization using JWT.',
+      'Integrated MongoDB with Mongoose for structured, scalable financial data handling.',
+      'Built clean and intuitive dashboards for users and administrators.',
+      'Focused on trust-first UI/UX for financial credibility and ease of use.',
+      'Created a responsive, mobile-first interface using Tailwind CSS.',
+      'Used Axios for efficient and secure client–server communication.',
+      'Applied Framer Motion for subtle, professional UI animations.',
     ],
   };
+
 
   const PortfolioData = {
     title: 'Portfolio - A website about me',
     description:
       "Built a personal portfolio project to showcase my skills, projects, couses completes and experiences with the motive to connect with the world and build a successful career.",
-      features: [
-        'Built a personal portfolio website using React, Next.js, and Tailwind CSS.',
-        'Implemented Next.js for efficient server-side rendering and routing.',
-        'Utilized Framer Motion for smooth animations and transitions.',
-        'Utilized various frontend frameworks and libraries and tools.',
-        'Utilized Git for version control and collaboration.',
-        'Integrated EmailJS for contact form functionality.',
+    features: [
+      'Built a personal portfolio website using React, Next.js, and Tailwind CSS.',
+      'Implemented Next.js for efficient server-side rendering and routing.',
+      'Utilized Framer Motion for smooth animations and transitions.',
+      'Utilized various frontend frameworks and libraries and tools.',
+      'Utilized Git for version control and collaboration.',
+      'Integrated EmailJS for contact form functionality.',
     ],
   };
-  
+
 
   return (
     <section id="projects" className="relative w-full py-10 bg-[#000000] ">
@@ -236,23 +230,24 @@ const ProjectSection = () => {
             />
           </div>
 
-          <div className='flex text-[#fff] items-center gap-10'>
+          <div className="flex text-[#fff] items-center gap-10">
             <ProjectCard
-              href="https://github.com/Gagan-poojari/playure"
-              title="A platform to hopefully revolutionize sporting by creating seamless connectivity between players and coaches."
-              imgSrc="/projects/playure.png"
-              shadowColor="#7E22CE"
-              gradientBg="linear-gradient(188.62deg, #3D1A7A 49.9%, #7E22CE 81.7%, #C084FC 93.88%, #F9D793 113.5%)"
-              textColor="text-purple-300"
+              href="https://www.nammabenaka.in/"
+              title="A full-stack loan management platform with secure authentication and modern UI."
+              imgSrc="/projects/nammabenaka.png"
+              shadowColor="#F97316"
+              gradientBg="linear-gradient(188.62deg, #431407 49.9%, #F97316 81.7%, #FDBA74 93.88%, #F9D793 113.5%)"
+              textColor="text-orange-300"
             />
             <ProjectCardDesc
-              href="https://github.com/Gagan-poojari/playure"
-              title={PlayureData.title}
-              description={PlayureData.description}
-              features={PlayureData.features}
-              techStack={ProjectsData.PlayureTechStack}
+              href="https://github.com/Gagan-poojari/mybenaka"
+              title={NammaBenakaData.title}
+              description={NammaBenakaData.description}
+              features={NammaBenakaData.features}
+              techStack={ProjectsData.NammaBenakaTechStack}
             />
           </div>
+
 
           <div className='flex text-[#fff] items-center gap-10'>
             <ProjectCard
@@ -305,7 +300,7 @@ const ProjectCardDesc = ({ href, title, description, features = [], techStack = 
             <Link href={href} target="_blank" className=" flex items-center gap-5">
               <div aria-hidden="true" className="font-bold text-lg text-blue-700" > <FaExternalLinkAlt /> </div>
               <h3 className="text-foreground text-2xl font-bold ">{title}</h3>
-              
+
             </Link>
             <p className="text-muted-foreground my-2 text-base font-light">{description}</p>
 
