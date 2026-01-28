@@ -14,6 +14,9 @@ export const metadata = {
   title: "Gagan Poojari",
   description:
     "Portfolio of Gagan Poojari - Full-Stack Web Developer, MLOps Engineer, and Open Source Contributor. Showcasing expertise in Next.js, React, Tailwind CSS, MongoDB, Docker, Kubernetes, and scalable AI-driven solutions.",
+  icons: {
+    icon: "/favicon.svg",
+  },
   keywords: [
     "Gagan Poojari",
     "Full Stack Developer",
