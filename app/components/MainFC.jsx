@@ -16,14 +16,25 @@ const MainFC = () => {
     { id: 5, src: '/icons/mern-icons/mongodb-icon.webp', alt: 'MongoDB' },
   ]
 
+  // const dsml_icons = [
+  //   { id: 1, src: '/icons/dsml-icons/docker-icon.webp', alt: 'Docker' },
+  //   { id: 2, src: '/icons/dsml-icons/kubernetes-icon.png', alt: 'Kubernetes' },
+  //   // { id: 5, src: '/icons/dsml-icons/scikit-learn-icon.png', alt: 'scikit-learn' },
+  //   { id: 9, src: '/icons/dsml-icons/prometheus-icon.png', alt: 'Prometheus' },
+  //   { id: 10, src: '/icons/dsml-icons/grafana-icon.webp', alt: 'Grafana' },
+  //   { id: 11, src: '/icons/dsml-icons/git-icon.png', alt: 'Git' },
+  // ]
+
   const dsml_icons = [
-    { id: 1, src: '/icons/dsml-icons/docker-icon.webp', alt: 'Docker' },
-    { id: 2, src: '/icons/dsml-icons/kubernetes-icon.png', alt: 'Kubernetes' },
-    // { id: 5, src: '/icons/dsml-icons/scikit-learn-icon.png', alt: 'scikit-learn' },
-    { id: 9, src: '/icons/dsml-icons/prometheus-icon.png', alt: 'Prometheus' },
-    { id: 10, src: '/icons/dsml-icons/grafana-icon.webp', alt: 'Grafana' },
-    { id: 11, src: '/icons/dsml-icons/git-icon.png', alt: 'Git' },
-  ]
+  { id: 1, src: '/icons/dsml-icons/python-icon.png', alt: 'Python' },
+  { id: 2, src: '/icons/dsml-icons/numpy-icon.png', alt: 'NumPy' },
+  { id: 3, src: '/icons/dsml-icons/pandas-icon.png', alt: 'Pandas' },
+  { id: 4, src: '/icons/dsml-icons/scikit-learn-icon.png', alt: 'Scikit-learn' },
+  // { id: 5, src: '/icons/dsml-icons/tensorflow-icon.png', alt: 'TensorFlow' },
+  // { id: 6, src: '/icons/dsml-icons/pytorch-icon.png', alt: 'PyTorch' },
+  { id: 7, src: '/icons/dsml-icons/matplotlib-icon.png', alt: 'Matplotlib' },
+  // { id: 8, src: '/icons/dsml-icons/seaborn-icon.png', alt: 'Seaborn' },
+]
 
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
