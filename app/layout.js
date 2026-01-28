@@ -36,11 +36,11 @@ export const metadata = {
     title: "Gagan Poojari | Full-Stack Developer & MLOps Engineer",
     description:
       "Explore the portfolio of Gagan Poojari - crafting modern web applications, AI solutions, and scalable cloud-native systems.",
-    url: "https://yourdomain.com",
+    url: "https://gaganpoojari-portfolio.vercel.app/",
     siteName: "Gagan Poojari",
     images: [
       {
-        url: "/projects/portfolio.png", // Replace with your OG image path
+        url: "/projects/portfolio.png",
         width: 1200,
         height: 630,
         alt: "Gagan Poojari Portfolio"
