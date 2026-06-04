@@ -2,208 +2,208 @@
 @tailwind components;
 @tailwind utilities;
 
-
-html {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* scroll-behavior: smooth; */
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #ffffff #000000f4;
-}
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
 @font-face {
   font-family: 'Transformers Movie';
   src: url("/fonts/transformers_movie/Transformers Movie.ttf") format('truetype');
   font-weight: normal;
   font-style: normal;
-}
-
-@font-face {
-  font-family: 'Righteous';
-  src: url('/fonts/righteous/Righteous-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'ClashDisplay';
-  src: url('/fonts/ClashDisplay/ClashDisplay-Regular.otf') format('truetype');
+  src: url('/fonts/ClashDisplay/ClashDisplay-Regular.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
+/* ── Tokens ──────────────────────────────────────────── */
+:root {
+  --font-display:   'Bebas Neue', 'Transformers Movie', sans-serif;
+  --font-body:      'DM Sans', 'ClashDisplay', sans-serif;
+  --font-mono:      'JetBrains Mono', monospace;
+  --font-clash:     'ClashDisplay', sans-serif;
+  --font-tf:        'Transformers Movie', sans-serif;
+
+  --blue:  #297bc9;
+  --red:   #c7061c;
+}
+
+/* ── Base ────────────────────────────────────────────── */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+*::-webkit-scrollbar       { width: 4px; height: 4px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
 
 body {
-  /* font-family: 'Righteous'; */
-  font-family: 'ClashDisplay';
-  background-color: #ffffff;
-  letter-spacing: 1px;
+  font-family: var(--font-body);
+  background-color: #050508;
+  color: #fff;
+  letter-spacing: 0.01em;
+  line-height: 1.65;
 }
 
-.custom-scrollbar1 {
-  scrollbar-color: #383838 #000000;
-  scrollbar-width: thin;
-  
+/* ── Typography scale ───────────────────────────────── */
+
+/* Bebas Neue - display headings, big numbers, section titles */
+.font-display,
+h1.display, h2.display {
+  font-family: var(--font-display);
+  font-weight: 400; /* Bebas only has one weight */
+  letter-spacing: 0.06em;
+  line-height: 0.95;
+  text-transform: uppercase;
 }
 
+/* DM Sans - body copy, UI labels, descriptions */
+.font-body {
+  font-family: var(--font-body);
+  letter-spacing: 0.01em;
+}
+
+/* JetBrains Mono - code, terminal labels, small caps tags */
+.font-mono,
+code, kbd, pre {
+  font-family: var(--font-mono) !important;
+  font-feature-settings: "liga" 0, "calt" 1;
+}
+
+/* ClashDisplay - kept for specific use if needed */
+.font-clash {
+  font-family: var(--font-clash);
+}
+
+/* Transformers - hero accent text only */
 .transformers {
-  font-family: 'Transformers Movie', sans-serif;
+  font-family: var(--font-tf), sans-serif;
 }
 
-
-.smooth{
-  transition: all ease-in-out 0.5s;
-}
-.smooth2{
-  transition: all ease-in-out 0.35s;
+/* ── Tailwind font-mono override ────────────────────── */
+.font-mono {
+  font-family: var(--font-mono) !important;
 }
 
-.navshad{
-  box-shadow: 0px 0px 7px 2px #0000002c;
-}
-.crdshdw:hover{
-  box-shadow: 0px 0px 7px 2px #ffffff;
-}
-
-.befaft::after{
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0%;
-  height: 2px;
-  background: #ffffff;
+/* ── Utility: gradient text ─────────────────────────── */
+.text-split {
+  background: linear-gradient(90deg, var(--blue), var(--red));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.befaft:hover::after{
-  animation: wztoh 0.3s ease-in-out 1;
-  width: 100%;
+.text-colorfull {
+  background: linear-gradient(90deg, var(--blue) 0%, #fff 50%, var(--red) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.befaft:active:after{
-  background: #ffffff;
+/* ── Font size scale (display) ──────────────────────── */
+/* Use these classes on section headings for consistent scale */
+.text-display-xl  { font-size: clamp(3.5rem,  8vw,  7rem);  }
+.text-display-lg  { font-size: clamp(2.8rem,  6vw,  5.5rem); }
+.text-display-md  { font-size: clamp(2rem,    4vw,  3.5rem); }
+.text-display-sm  { font-size: clamp(1.4rem,  2.5vw, 2rem); }
+
+/* ── Animations ─────────────────────────────────────── */
+@keyframes slide {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+.animate-slide { animation: slide 30s linear infinite; }
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%;   }
+  50%       { background-position: 100% 50%; }
+}
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 4s ease infinite;
 }
 
-@keyframes wztoh {
-  from {
-      width: 0;
-  }
-  to {
-      width: 100%;
-  }
+@keyframes rgbShift {
+  0%   { transform: translate(0px,  0px);  }
+  20%  { transform: translate(3px,  -3px); }
+  40%  { transform: translate(-3px, 3px);  }
+  60%  { transform: translate(2px,  -2px); }
+  80%  { transform: translate(-2px, 2px);  }
+  100% { transform: translate(0px,  0px);  }
+}
+@keyframes verticalShake {
+  0%   { transform: translateY(0);   }
+  25%  { transform: translateY(-1px);}
+  50%  { transform: translateY(1px); }
+  75%  { transform: translateY(-2px);}
+  100% { transform: translateY(0);   }
 }
 
-.asushad{
-  box-shadow: 0px 0px 7px 2px #0000007b;
-}
-.customshadow {
-  box-shadow: 0px 0px 10px 4px #00000028;
-}
-
-/* Animation for central image (split personality image) */
-
+/* ── Glitch image ───────────────────────────────────── */
 .glitch-wrapper {
   position: relative;
   display: inline-block;
   overflow: hidden;
 }
-
 .glitch-img {
-  /* width: 100%; */
   height: auto;
   display: block;
   image-rendering: pixelated;
 }
-
 .glitch::before,
 .glitch::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: url('/me-removebg-preview.png') no-repeat center;
   background-size: cover;
   pointer-events: none;
   mix-blend-mode: screen;
 }
-
 .glitch::before {
   transform: translate(2px, -2px);
   filter: contrast(2) brightness(1.2) saturate(1.5) drop-shadow(0 0 2px red);
   animation: rgbShift 0.3s infinite;
   opacity: 0.7;
 }
-
 .glitch::after {
   transform: translate(-2px, 2px);
   filter: contrast(2) brightness(1.2) saturate(1.5) drop-shadow(0 0 2px cyan);
   animation: verticalShake 0.2s infinite;
   opacity: 0.7;
 }
-
-@keyframes rgbShift {
-  0% { transform: translate(0px, 0px); }
-  20% { transform: translate(3px, -3px); }
-  40% { transform: translate(-3px, 3px); }
-  60% { transform: translate(2px, -2px); }
-  80% { transform: translate(-2px, 2px); }
-  100% { transform: translate(0px, 0px); }
-}
-
-@keyframes verticalShake {
-  0% { transform: translateY(0); }
-  25% { transform: translateY(-1px); }
-  50% { transform: translateY(1px); }
-  75% { transform: translateY(-2px); }
-  100% { transform: translateY(0); }
-}
-
-/* CRT Scanlines */
 .glitch-img::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
+  top: 0; left: 0;
+  height: 100%; width: 100%;
   background-image: repeating-linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.2) 0px,
-    rgba(0, 0, 0, 0.2) 1px,
+    rgba(0,0,0,0.2) 0px,
+    rgba(0,0,0,0.2) 1px,
     transparent 1px,
     transparent 2px
   );
   pointer-events: none;
 }
 
+/* ── Masks ──────────────────────────────────────────── */
 .mask-half-top {
   mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
 
-@keyframes slide {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-slide {
-  animation: slide 30s linear infinite;
-}
-
-/* for sidebar */
-.shadow-neomorph-icon {
-  box-shadow: 2px 2px 5px #b9c0cb, -6px -6px 12px #ffffff;
-}
-
-.inset-shadow {
-  box-shadow: inset 0 0 4px 2px #00000046, inset -6px -6px 12px #ffffff;
-}
+/* ── Misc utils ─────────────────────────────────────── */
+.smooth  { transition: all ease-in-out 0.5s;  }
+.smooth2 { transition: all ease-in-out 0.35s; }

@@ -1,225 +1,315 @@
 'use client'
 import Image from 'next/image'
-import React, { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import Balancer from 'react-wrap-balancer';
-
+import React, { useEffect, useState, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Tilt from 'react-parallax-tilt'
 import GlitchImage from './GlitchImage'
 
-const MainFC = () => {
-  const mern_icons = [
-    { id: 1, src: '/icons/mern-icons/nextjs-icon.png', alt: 'Next.js' },
-    { id: 2, src: '/icons/mern-icons/reactjs-icon.png', alt: 'React.js' },
-    { id: 3, src: '/icons/mern-icons/expressjs-icon.png', alt: 'Express.js' },
-    { id: 4, src: '/icons/mern-icons/git-icon.png', alt: 'Git' },
-    { id: 5, src: '/icons/mern-icons/mongodb-icon.webp', alt: 'MongoDB' },
-  ]
+const mern_icons = [
+  { id: 1, src: '/icons/mern-icons/nextjs-icon.png', alt: 'Next.js' },
+  { id: 2, src: '/icons/mern-icons/reactjs-icon.png', alt: 'React.js' },
+  { id: 3, src: '/icons/mern-icons/expressjs-icon.png', alt: 'Express.js' },
+  { id: 4, src: '/icons/mern-icons/git-icon.png', alt: 'Git' },
+  { id: 5, src: '/icons/mern-icons/mongodb-icon.webp', alt: 'MongoDB' },
+]
 
-  // const dsml_icons = [
-  //   { id: 1, src: '/icons/dsml-icons/docker-icon.webp', alt: 'Docker' },
-  //   { id: 2, src: '/icons/dsml-icons/kubernetes-icon.png', alt: 'Kubernetes' },
-  //   // { id: 5, src: '/icons/dsml-icons/scikit-learn-icon.png', alt: 'scikit-learn' },
-  //   { id: 9, src: '/icons/dsml-icons/prometheus-icon.png', alt: 'Prometheus' },
-  //   { id: 10, src: '/icons/dsml-icons/grafana-icon.webp', alt: 'Grafana' },
-  //   { id: 11, src: '/icons/dsml-icons/git-icon.png', alt: 'Git' },
-  // ]
-
-  const dsml_icons = [
+const dsml_icons = [
   { id: 1, src: '/icons/dsml-icons/python-icon.png', alt: 'Python' },
   { id: 2, src: '/icons/dsml-icons/numpy-icon.png', alt: 'NumPy' },
   { id: 3, src: '/icons/dsml-icons/pandas-icon.png', alt: 'Pandas' },
   { id: 4, src: '/icons/dsml-icons/scikit-learn-icon.png', alt: 'Scikit-learn' },
-  // { id: 5, src: '/icons/dsml-icons/tensorflow-icon.png', alt: 'TensorFlow' },
-  // { id: 6, src: '/icons/dsml-icons/pytorch-icon.png', alt: 'PyTorch' },
-  { id: 7, src: '/icons/dsml-icons/matplotlib-icon.png', alt: 'Matplotlib' },
-  // { id: 8, src: '/icons/dsml-icons/seaborn-icon.png', alt: 'Seaborn' },
+  { id: 5, src: '/icons/dsml-icons/matplotlib-icon.png', alt: 'Matplotlib' },
 ]
 
-  const fadeIn = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-  }
+const fadeUp = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.32, 0.72, 0, 1] } } }
+const slideLeft = { hidden: { opacity: 0, x: -40 }, show: { opacity: 1, x: 0, transition: { duration: 0.75, ease: [0.32, 0.72, 0, 1] } } }
+const slideRight = { hidden: { opacity: 0, x: 40 }, show: { opacity: 1, x: 0, transition: { duration: 0.75, ease: [0.32, 0.72, 0, 1] } } }
+const staggerIcons = { hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.5 } } }
+const iconItem = {
+  hidden: { opacity: 0, scale: 0.7, y: 10 },
+  show: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 18 } },
+}
 
+const BlueIcon = ({ src, alt }) => (
+  <motion.div variants={iconItem} whileHover={{ scale: 1.15, rotate: 4, y: -3 }}
+    transition={{ type: 'spring', stiffness: 320, damping: 14 }}
+    className="group relative p-[5px] cursor-default">
+    <Image src={src} alt={alt} title={alt} width={80} height={80}
+      className="w-11 sm:w-12 p-[7px] border border-[#297bc9]/50 rounded-xl bg-[#297bc9]/5
+                 backdrop-blur-sm transition-all duration-300
+                 group-hover:border-[#297bc9]/90 group-hover:shadow-[0_0_14px_rgba(41,123,201,0.35)]
+                 group-hover:bg-[#297bc9]/10" />
+  </motion.div>
+)
 
-const sentence = {
-  hidden: { opacity: 1 },
-  visible: {
-    transition: {
-      delay: 0,
-      staggerChildren: 0.05,
-    },
-  },
-};
+const RedIcon = ({ src, alt }) => (
+  <motion.div variants={iconItem} whileHover={{ scale: 1.15, rotate: -4, y: -3 }}
+    transition={{ type: 'spring', stiffness: 320, damping: 14 }}
+    className="group relative p-[5px] cursor-default">
+    <Image src={src} alt={alt} title={alt} width={80} height={80}
+      className="w-11 sm:w-12 p-[7px] border border-[#c7061c]/50 rounded-xl bg-[#c7061c]/5
+                 backdrop-blur-sm transition-all duration-300
+                 group-hover:border-[#c7061c]/90 group-hover:shadow-[0_0_14px_rgba(199,6,28,0.35)]
+                 group-hover:bg-[#c7061c]/10" />
+  </motion.div>
+)
 
-const letter = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0 },
-};
+// ─────────────────────────────────────────────────────────────────────────────
+// Glitch Decode - all randomness lives in useEffect, never in render
+// ─────────────────────────────────────────────────────────────────────────────
+const GLITCH_CHARS = '!<>-_\\/[]{}-=+*^?#@%$&ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
-  const [heading, setHeading] = useState('WELCOME TO MY PORTFOLIO...');
-  const [hasSwitched, setHasSwitched] = useState(false);
+function GlitchDecodeHeading({ text, triggered }) {
+  // Start with the actual text visible (no blank flash on load)
+  const [letters, setLetters] = useState(() =>
+    text.split('').map((ch) => ({
+      char: ch,
+      locked: true,
+      glitchX: 0,
+      glitchY: 0,
+      hue: 200,
+      shadowX1: 0,
+      shadowX2: 0,
+    }))
+  )
+  const [done, setDone] = useState(true)
+  const [scanFlash, setScanFlash] = useState(false)
+  const rafRef = useRef(null)
+  const stateRef = useRef({ locked: [], iter: [] })
 
+  // When text changes (heading switch), re-init to new text locked
   useEffect(() => {
-    if (!hasSwitched) {
-      const timeout = setTimeout(() => {
-        setHeading("I'M GAGAN POOJARI");
-        setHasSwitched(true);
-      }, 2500);
-      return () => clearTimeout(timeout);
-    }
-  }, [hasSwitched]);
+    setLetters(
+      text.split('').map((ch) => ({
+        char: ch, locked: true,
+        glitchX: 0, glitchY: 0, hue: 200, shadowX1: 0, shadowX2: 0,
+      }))
+    )
+    setDone(true)
+  }, [text])
 
+  // When triggered fires, run the decode animation
+  useEffect(() => {
+    if (!triggered) return
+
+    setScanFlash(true)
+    setTimeout(() => setScanFlash(false), 600)
+
+    const MAX_ITER = 10
+    const STAGGER = 38
+
+    stateRef.current.locked = Array(text.length).fill(false)
+    stateRef.current.iter = Array(text.length).fill(-9999)
+
+    text.split('').forEach((_, i) => {
+      setTimeout(() => { stateRef.current.iter[i] = 0 }, i * STAGGER)
+    })
+
+    setDone(false)
+
+    let lastFrame = 0
+    const FRAME_MS = 45
+
+    function tick(ts) {
+      if (ts - lastFrame < FRAME_MS) { rafRef.current = requestAnimationFrame(tick); return }
+      lastFrame = ts
+
+      const state = stateRef.current
+      let allDone = true
+      const next = []
+
+      for (let i = 0; i < text.length; i++) {
+        if (state.locked[i]) {
+          next.push({ char: text[i], locked: true, glitchX: 0, glitchY: 0, hue: 200, shadowX1: 0, shadowX2: 0 })
+          continue
+        }
+        if (state.iter[i] < 0) {
+          next.push({ char: ' ', locked: false, glitchX: 0, glitchY: 0, hue: 200, shadowX1: 0, shadowX2: 0 })
+          allDone = false
+          continue
+        }
+
+        allDone = false
+
+        if (state.iter[i] >= MAX_ITER) {
+          state.locked[i] = true
+          next.push({ char: text[i], locked: true, glitchX: 0, glitchY: 0, hue: 200, shadowX1: 0, shadowX2: 0 })
+        } else {
+          const bias = state.iter[i] / MAX_ITER
+          const ch = Math.random() < bias
+            ? text[i]
+            : GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]
+          state.iter[i]++
+          next.push({
+            char: ch,
+            locked: false,
+            glitchX: (Math.random() - 0.5) * 6,
+            glitchY: (Math.random() - 0.5) * 4,
+            hue: Math.floor(Math.random() * 60) + 180,
+            shadowX1: (Math.random() - 0.5) * 4,
+            shadowX2: (Math.random() - 0.5) * 4,
+          })
+        }
+      }
+
+      setLetters(next)
+
+      if (allDone) { setDone(true); return }
+      rafRef.current = requestAnimationFrame(tick)
+    }
+
+    rafRef.current = requestAnimationFrame(tick)
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [triggered])
 
   return (
-    <div className='min-h-screen flex flex-col justify-center items-center lg:gap-20 p-10 pt-24'>
-      {/* <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={sentence}
-      className="flex flex-col items-center justify-center text-center px-6"
-    >
-      <h1 style={{
-          textShadow:
-            '0px 4px 8px rgba(255,255,255,.05),0px 8px 30px rgba(255,255,255,.25)',
-        }} className="text-2xl mt-14 mb-7 lg:m-0 md:text-4xl lg:text-5xl font-extrabold text-[#ffffff]">
-        <Balancer>
-          {heading.split('').map((char, index) => (
-            <motion.span key={index} variants={letter}>
-              {char === ' ' ? '\u00A0' : char}
-            </motion.span>
-          ))}
-        </Balancer>
+    <div className="relative flex flex-col items-center justify-center text-center px-4">
+      <AnimatePresence>
+        {scanFlash && (
+          <motion.div
+            className="absolute inset-x-0 h-[2px] pointer-events-none"
+            style={{ background: 'rgba(41,123,201,0.7)', top: '50%' }}
+            initial={{ scaleX: 0, opacity: 1 }}
+            animate={{ scaleX: 1, opacity: 0 }}
+            exit={{}}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+          />
+        )}
+      </AnimatePresence>
+
+      <h1 className="transformers text-xl md:text-4xl lg:text-5xl font-extrabold tracking-widest">
+        {letters.map((l, i) => (
+          <span
+            key={i}
+            className="inline-block transformers"
+            style={{
+              // fontSize: "clamp(30px, 5vw, 50px)",
+              WebkitTextStroke: `1px #fff`,
+              color: "transparent",
+              transition: "all 0.4s ease",
+              lineHeight: 0.92,
+              // letterSpacing: "-0.03em",
+              margin: 0,
+              fontWeight: 800,
+              // fontFamily: "'Syne', sans-serif",
+              transform: l.locked ? 'none' : `translate(${l.glitchX}px,${l.glitchY}px)`,
+              // color: l.locked ? '#f0f0f0' : `hsl(${l.hue},80%,70%)`,
+              opacity: l.locked ? 1 : 0.85,
+              textShadow: l.locked
+                ? 'none'
+                : `0 0 8px rgba(100,200,255,0.6), ${l.shadowX1}px 0 rgba(199,6,28,0.7), ${l.shadowX2}px 0 rgba(41,123,201,0.7)`,
+              transition: l.locked ? 'color 0.15s ease, text-shadow 0.2s ease' : 'none',
+            }}
+          >
+            {text[i] === ' ' ? '\u00A0' : l.char}
+          </span>
+        ))}
+        <span className="heading-cursor" aria-hidden="true" />
       </h1>
-    </motion.div> */}
-        
-      <div className="relative z-10 flex flex-col lg:flex-row justify-center items-center gap-10 px-4 overflow-hidden">
 
-        {/* Left gradient wave */}
-        {/* <div className="absolute left-0 top-0 w-1/2 h-full bg-gradient-to-b from-[#297bc9]/20 to-transparent z-0 pointer-events-none" /> */}
-        {/* Right gradient wave */}
-        {/* <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-b from-[#c7061c]/20 to-transparent z-0 pointer-events-none" /> */}
-        {/* Optional subtle noise texture */}
-        {/* <div className="absolute inset-0 bg-[url('/noise.png')] opacity-5 z-0 mix-blend-soft-light pointer-events-none" /> */}
-        <Tilt tiltMaxAngleX={10} tiltMaxAngleY={10} glareEnable={false} glareMaxOpacity={0.2} className="z-10 w-full smooth">
-          <div className="flex flex-col lg:flex-row justify-center items-center gap-10 relative z-10 ">
+      <AnimatePresence>
+        {done && (
+          <motion.div
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: 1, opacity: 1 }}
+            transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
+            className="mt-2 h-[1.5px] w-2/3"
+            style={{
+              // background: 'linear-gradient(90deg,transparent,#297bc9 30%,#c7061c 70%,transparent)',
+              background: 'linear-gradient(90deg,transparent,#fff 30%,#fff 70%,transparent)',
+              transformOrigin: 'center',
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
 
-            {/* MERN Stack Section */}
-            <motion.div
-              className="w-full lg:w-1/3 flex flex-col items-end"
-              initial="hidden"
-              animate="show"
-              variants={fadeIn}
-            >
-              <motion.div
-                className="text-right text-[#297bc9] transformers"
-                initial={{ x: -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.8 }}
-              >
-                <div className="text-4xl font-bold">MERN stack</div>
-                <div className="text-3xl font-semibold">Developer</div>
+// ─────────────────────────────────────────────────────────────────────────────
+const MainFC = () => {
+  // "WELCOME..." is shown immediately; after 2.5s it switches + triggers decode
+  const [heading, setHeading] = useState('WELCOME TO MY PORTFOLIO...')
+  const [triggered, setTriggered] = useState(false)
+  const [hasSwitched, setHasSwitched] = useState(false)
+
+  useEffect(() => {
+    if (hasSwitched) return
+    const t = setTimeout(() => {
+      setHeading("I'M GAGAN POOJARI")
+      setTriggered(true)
+      setHasSwitched(true)
+    }, 2500)
+    return () => clearTimeout(t)
+  }, [hasSwitched])
+
+  return (
+    <>
+      <style>{`
+        @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        .heading-cursor {
+          display:inline-block; width:3px; height:0.85em;
+          background:#f0f0f0; margin-left:4px; vertical-align:middle;
+          border-radius:1px; animation:cursor-blink 1.1s step-end infinite;
+        }
+      `}</style>
+
+      <div className="min-h-screen flex flex-col justify-center items-center gap-16 lg:gap-20 p-8 pt-24 overflow-hidden">
+
+        {/* ── three-column hero ── */}
+        <Tilt tiltMaxAngleX={6} tiltMaxAngleY={6} glareEnable={false} className="w-full max-w-5xl">
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-10 relative">
+
+            <div className="pointer-events-none absolute left-0 top-0 w-1/2 h-full bg-gradient-to-r from-[#297bc9]/8 to-transparent" />
+            <div className="pointer-events-none absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-[#c7061c]/8 to-transparent" />
+
+            {/* LEFT */}
+            <motion.div className="w-full lg:w-1/3 flex flex-col items-end gap-5" initial="hidden" animate="show" variants={fadeUp}>
+              <motion.div className="text-right transformers" variants={slideLeft} initial="hidden" animate="show">
+                <p className="text-[#297bc9] text-3xl lg:text-4xl font-bold tracking-wide leading-tight">MERN STACK</p>
+                <p className="text-[#297bc9]/65 text-xl lg:text-2xl font-semibold tracking-[0.12em] mt-1">DEVELOPER</p>
               </motion.div>
+              <motion.div className="flex flex-wrap justify-end" variants={staggerIcons} initial="hidden" animate="show">
+                {mern_icons.map((item) => <BlueIcon key={item.id} src={item.src} alt={item.alt} />)}
+              </motion.div>
+            </motion.div>
 
-              <motion.div
-                className="flex flex-wrap justify-end mt-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-              >
-                {mern_icons.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    whileHover={{ scale: 1.2, rotate: 5 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                    className="group p-1 relative"
-                  >
-                    <Image
-                      src={item.src}
-                      alt={item.alt}
-                      title={item.alt}
-                      width={80}
-                      height={80}
-                      className="w-12 sm:w-14 p-2 m-1 border-2 border-[#297bc9] border-double rounded-xl shadow-md backdrop-blur-sm transition-all hover:shadow-blue-400"
-                    />
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-all rounded-xl blur-sm pointer-events-none" />
-                  </motion.div>
-                ))}
+            {/* CENTER */}
+            <motion.div className="relative z-10 flex-shrink-0"
+              initial={{ opacity: 0, scale: 0.88 }} animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.9, ease: [0.32, 0.72, 0, 1], delay: 0.15 }}>
+              {['top-0 left-0 border-t-2 border-l-2', 'top-0 right-0 border-t-2 border-r-2',
+                'bottom-0 left-0 border-b-2 border-l-2', 'bottom-0 right-0 border-b-2 border-r-2'
+              ].map((cls, i) => (
+                <span key={i} className={`absolute w-4 h-4 border-white/20 rounded-sm ${cls}`} style={{ margin: '-6px' }} />
+              ))}
+              <div className="border border-[#c7061c]/30 rounded-sm p-[2px]">
+                <div className="border border-[#297bc9]/15 rounded-sm">
+                  <GlitchImage />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* RIGHT */}
+            <motion.div className="w-full lg:w-1/3 flex flex-col items-start gap-5" initial="hidden" animate="show" variants={fadeUp}>
+              <motion.div className="flex flex-wrap justify-start" variants={staggerIcons} initial="hidden" animate="show">
+                {dsml_icons.map((item) => <RedIcon key={item.id} src={item.src} alt={item.alt} />)}
+              </motion.div>
+              <motion.div className="text-left transformers" variants={slideRight} initial="hidden" animate="show">
+                <p className="text-[#c7061c] text-3xl lg:text-4xl font-bold tracking-wide leading-tight">DATA SCIENCE &<br />MACHINE LEARNING</p>
+                <p className="text-[#c7061c]/65 text-xl lg:text-2xl font-semibold tracking-[0.12em] mt-1">ENGINEER</p>
               </motion.div>
             </motion.div>
 
-            {/* Glitch Image Centerpiece */}
-            <div className="relative-10">
-              <GlitchImage />
-            </div>
-
-            {/* DSML Section */}
-            <motion.div
-              className="w-full lg:w-1/3 flex flex-col items-start"
-              initial="hidden"
-              animate="show"
-              variants={fadeIn}
-            >
-              <motion.div
-                className="flex flex-wrap justify-start mt-auto"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
-              >
-                {dsml_icons.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    whileHover={{ scale: 1.2, rotate: -5 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                    className="group p-1 relative"
-                  >
-                    <Image
-                      src={item.src}
-                      alt={item.alt}
-                      title={item.alt}
-                      width={80}
-                      height={80}
-                      className="w-12 sm:w-14 p-2 m-1 border-2 border-[#c7061c] rounded-xl shadow-md backdrop-blur-sm transition-all hover:shadow-red-400"
-                    />
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-all rounded-xl blur-sm pointer-events-none" />
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              <motion.div
-                className="text-left text-[#c7061c] mt-6 transformers"
-                initial={{ x: 50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.8 }}
-              >
-                <div className="text-4xl font-bold">Data Science &</div>
-                <div className="text-4xl font-bold">Machine Learning</div>
-                <div className="text-3xl font-semibold">Engineer</div>
-              </motion.div>
-            </motion.div>
           </div>
         </Tilt>
+
+        {/* ── heading ── */}
+        <GlitchDecodeHeading text={heading} triggered={triggered} />
+
       </div>
-      <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={sentence}
-      className="flex flex-col items-center justify-center text-center px-6"
-    >
-      <h1 style={{
-          textShadow:
-            '0px 4px 8px rgba(255,255,255,.05),0px 8px 30px rgba(255,255,255,.25)',
-        }} className="text-2xl mt-14 lg:m-0 md:text-4xl lg:text-5xl font-extrabold text-[#f4f4f4] transformers">
-        <Balancer>
-          {heading.split('').map((char, index) => (
-            <motion.span key={index} variants={letter}>
-              {char === ' ' ? '\u00A0' : char}
-            </motion.span>
-          ))}
-        </Balancer>
-      </h1>
-    </motion.div>
-    </div>
+    </>
   )
 }
 

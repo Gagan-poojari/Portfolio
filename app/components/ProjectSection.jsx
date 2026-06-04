@@ -1,395 +1,590 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { FaExternalLinkAlt } from 'react-icons/fa';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 
-const ProjectSection = () => {
+// ─── DATA ────────────────────────────────────────────────────────────────────
 
-  const ProjectsData = {
-    PleebTechStack: [
-      { name: 'Python', icon: 'https://cdn.simpleicons.org/python' },
-      { name: 'Streamlit', icon: 'https://cdn.simpleicons.org/streamlit' },
-      { name: 'Whisper', icon: '/icons/skills-icons/whisper-icon.webp' }, // custom path
-      { name: 'FFmpeg', icon: '/icons/skills-icons/ffmpeg-icon.png' },
-      { name: 'MoviePy', icon: '/icons/skills-icons/moviepy-icon.png' },
-      { name: 'OpenAI', icon: 'https://cdn.simpleicons.org/openai' },
-      { name: 'Regex', icon: '/icons/skills-icons/regex-icon.png' },
-      { name: 'Pandas', icon: 'https://cdn.simpleicons.org/pandas' },
-      { name: 'Numpy', icon: 'https://cdn.simpleicons.org/numpy' },
-      { name: 'GitHub', icon: 'https://cdn.simpleicons.org/github/white' },
-      // { name: 'Docker', icon: 'https://cdn.simpleicons.org/docker' },
-      // { name: 'Linux', icon: 'https://cdn.simpleicons.org/linux' },
+const PROJECTS = [
+  {
+    id: 'ruva',
+    num: '01',
+    title: 'RUVA',
+    sub: 'Full-Stack E-Commerce',
+    tagline: 'Traditional Indian ethnic wear - from catalogue to checkout, fully yours.',
+    liveHref: 'https://github.com/Gagan-poojari/',
+    githubHref: 'https://github.com/Gagan-poojari/',
+    cat: 'Full-Stack',
+    accent: '#F97316',
+    stack: ['Next.js', 'React', 'Node.js', 'Express.js', 'MongoDB', 'JWT', 'Razorpay', 'Cloudinary', 'Tailwind CSS', 'Google OAuth', 'Gemini AI', 'EmailJS'],
+    bullets: [
+      'Product catalog, category browsing, cart, wishlist, and user profiles with complete order history.',
+      'RESTful APIs with JWT auth, Google OAuth sign-in, and Razorpay payments with server-side verification.',
+      'Admin dashboard with Cloudinary image uploads and Google Gemini AI auto-generating product descriptions.',
+      'Hardened with rate limiting, CORS policies, and request validation; EmailJS for live order notifications.',
     ],
-    SufhTechStack: [
-      { name: 'ReactJS', icon: 'https://cdn.simpleicons.org/react' },
-      // { name: 'NodeJS', icon: 'https://cdn.simpleicons.org/nodejs' },
-      // { name: 'ExpressJS', icon: 'https://cdn.simpleicons.org/express' },
-      { name: 'NextJS', icon: 'https://cdn.simpleicons.org/nextdotjs' },
-      { name: 'Tailwind CSS', icon: 'https://cdn.simpleicons.org/tailwindcss' },
-      { name: 'Framer Motion', icon: 'https://cdn.simpleicons.org/framer' },
-      { name: 'SwiperJS', icon: 'https://cdn.simpleicons.org/swiper' },
-      { name: 'Frame Motion', icon: 'https://cdn.simpleicons.org/framer' },
-      { name: 'Google Maps', icon: 'https://cdn.simpleicons.org/googlemaps' },
-      { name: 'Git', icon: 'https://cdn.simpleicons.org/git' },
-      { name: 'GitHub', icon: 'https://cdn.simpleicons.org/github' },
-      { name: 'EmailJS', icon: 'https://cdn.simpleicons.org/emailjs' },
+  },
+  {
+    id: 'pleeb',
+    num: '02',
+    title: 'Pleeb',
+    sub: 'AI Video Auto-Censorship',
+    tagline: 'Transcribes, detects profanity, and bleeps it - frame-accurate, every time.',
+    liveHref: 'https://pleeb-meme-the-mess.streamlit.app/',
+    githubHref: 'https://github.com/Gagan-poojari/',
+    cat: 'ML & AI',
+    accent: '#DB2777',
+    stack: ['Python', 'FastAPI', 'Whisper', 'FFmpeg', 'MoviePy', 'Pydub', 'Next.js', 'SQLAlchemy', 'SSE', 'REST API'],
+    bullets: [
+      'AI-powered video censorship: transcribes speech with word-level timestamps, detects profanity, replaces flagged words with bleep/meme audio in perfect sync.',
+      'FastAPI backend with background job processing and SSE progress streaming for the full upload → process → download pipeline.',
+      'Whisper-timestamped for precise detection with normalization, lemmatization, n-gram detection, and confidence gating to eliminate false positives.',
+      'Duration-based meme audio selection, volume matching, and lossless WAV processing for frame-accurate censorship timing.',
     ],
-    FiceTechStack: [
-      { name: 'ReactJS', icon: 'https://cdn.simpleicons.org/react' },
-      { name: 'NextJS', icon: 'https://cdn.simpleicons.org/nextdotjs' },
-      { name: 'Tailwind CSS', icon: 'https://cdn.simpleicons.org/tailwindcss' },
-      { name: 'Framer Motion', icon: 'https://cdn.simpleicons.org/framer' },
-      { name: 'SwiperJS', icon: 'https://cdn.simpleicons.org/swiper' },
-      { name: 'Frame Motion', icon: 'https://cdn.simpleicons.org/framer' },
-      { name: 'Git', icon: 'https://cdn.simpleicons.org/git' },
-      { name: 'GitHub', icon: 'https://cdn.simpleicons.org/github' },
-      { name: 'EmailJS', icon: 'https://cdn.simpleicons.org/emailjs' },
+  },
+  {
+    id: 'mlops',
+    num: '03',
+    title: 'MLOps Pipeline',
+    sub: 'End-to-End Sentiment Analysis',
+    tagline: 'Production-grade NLP pipeline - from raw IMDB data to live predictions.',
+    liveHref: 'https://github.com/Gagan-poojari/',
+    githubHref: 'https://github.com/Gagan-poojari/',
+    cat: 'MLOps',
+    accent: '#0194E2',
+    stack: ['Python', 'scikit-learn', 'NLTK', 'DVC', 'MLflow', 'DagsHub', 'Flask', 'Prometheus', 'GitHub Actions', 'AWS S3', 'pandas', 'NumPy'],
+    bullets: [
+      'End-to-end NLP pipeline for binary sentiment classification on IMDB data, serving real-time predictions via Flask UI.',
+      'Fully reproducible ML workflow with DVC and MLflow on DagsHub for experiment tracking and Staging-to-Production model promotion.',
+      'Automated CI with GitHub Actions - running dvc repro, unit tests, and conditional model promotion on every push.',
+      'Prometheus counters and histograms for request volume, latency, and prediction distribution monitoring.',
     ],
-    NammaBenakaTechStack: [
-      { name: 'ReactJS', icon: 'https://cdn.simpleicons.org/react' },
-      { name: 'NextJS', icon: 'https://cdn.simpleicons.org/nextdotjs' },
-      { name: 'NodeJS', icon: 'https://cdn.simpleicons.org/nodejs' },
-      { name: 'ExpressJS', icon: 'https://cdn.simpleicons.org/express' },
-      { name: 'MongoDB', icon: 'https://cdn.simpleicons.org/mongodb' },
-      { name: 'Mongoose', icon: 'https://cdn.simpleicons.org/mongoose' },
-      { name: 'JWT', icon: 'https://cdn.simpleicons.org/jsonwebtokens' },
-      { name: 'Axios', icon: 'https://cdn.simpleicons.org/axios' },
-      { name: 'Tailwind CSS', icon: 'https://cdn.simpleicons.org/tailwindcss' },
-      { name: 'Framer Motion', icon: 'https://cdn.simpleicons.org/framer' },
-      { name: 'Git', icon: 'https://cdn.simpleicons.org/git' },
-      { name: 'GitHub', icon: 'https://cdn.simpleicons.org/github' },
+  },
+  {
+    id: 'nammabenaka',
+    num: '04',
+    title: 'Namma Benaka',
+    sub: 'Loan Management Platform',
+    tagline: 'End-to-end fintech - from borrower onboarding to automated late-fee crons.',
+    liveHref: 'https://www.nammabenaka.in/',
+    githubHref: 'https://github.com/Gagan-poojari/',
+    cat: 'Full-Stack',
+    accent: '#F97316',
+    stack: ['Next.js', 'React', 'Node.js', 'Express.js', 'MongoDB', 'JWT', 'Tailwind CSS', 'Recharts', 'Node-Cron', 'bcrypt'],
+    bullets: [
+      'Full loan management platform: borrower onboarding, loan issuance, repayment tracking, Admin and Manager portals.',
+      'REST APIs with JWT authentication, role-based authorization, and bcrypt-secured credentials.',
+      'Full loan lifecycle: repayment schedules, payment recording, outstanding balance calculations, automated late-fee crons.',
+      'Rich Recharts dashboards for portfolio overview, collections, overdue loans, and audit logs.',
     ],
-
-    PortfolioTechStack: [
-      { name: 'ReactJS', icon: 'https://cdn.simpleicons.org/react' },
-      { name: 'NextJS', icon: 'https://cdn.simpleicons.org/nextdotjs' },
-      { name: 'Tailwind CSS', icon: 'https://cdn.simpleicons.org/tailwindcss' },
-      { name: 'Framer Motion', icon: 'https://cdn.simpleicons.org/framer' },
-      { name: 'SwiperJS', icon: 'https://cdn.simpleicons.org/swiper' },
-      { name: 'Frame Motion', icon: 'https://cdn.simpleicons.org/framer' },
-      { name: 'ParallaxJS', icon: 'https://cdn.simpleicons.org/parallax' },
-      { name: 'Git', icon: 'https://cdn.simpleicons.org/git' },
-      { name: 'GitHub', icon: 'https://cdn.simpleicons.org/github' },
-      { name: 'EmailJS', icon: 'https://cdn.simpleicons.org/emailjs' },
-    ]
-  }
-
-  const PleebData = {
-    title: 'Pleeb - MemeTheMess',
-    description:
-      'Built Pleeb, a personal project and a Streamlit-powered video content tool that helps contents creators by transcribing, censoring, and meme audio cussing using Whisper and custom overlays.',
-    features: [
-      'Developed with Python and Streamlit for fast, interactive app UI.',
-      'Integrated OpenAI Whisper for accurate speech transcription.',
-      'Used MoviePy and FFmpeg for precise audio/video manipulation.',
-      'Used regex for keyword censors.',
-      'Enabled auto and manual keyword censoring using regular expressions.',
-      'Overlaid meme sounds, bleeps, or silences for censored words.',
-      'Supports uploading and processing of MP4 files with real-time feedback.',
-      'Modular code with CLI and Streamlit interface support.',
-      'Clean UI with keyword table editor and download/export support.',
+  },
+  {
+    id: 'holmac',
+    num: '05',
+    title: 'HOLMAC Interiors',
+    sub: 'Interior Design Portfolio',
+    tagline: 'Cinematic entry video, Cloudinary galleries, and every lead captured.',
+    liveHref: 'https://github.com/Gagan-poojari/',
+    githubHref: 'https://github.com/Gagan-poojari/',
+    cat: 'Frontend',
+    accent: '#14B8A6',
+    stack: ['Next.js', 'React', 'Tailwind CSS', 'Cloudinary', 'EmailJS', 'Google Analytics', 'Framer Motion'],
+    bullets: [
+      'Multi-page marketing site with hero sections, service highlights, product catalogs, and client testimonials.',
+      'Category-based Cloudinary image/video galleries with scroll-triggered animations.',
+      'Network-aware branded entrance video that adapts quality based on connection speed.',
+      'EmailJS lead capture, EMI calculator, WhatsApp click-to-chat, SEO metadata, and Analytics conversion tracking.',
     ],
-  };
-
-  const SufhData = {
+  },
+  {
+    id: 'fice',
+    num: '06',
+    title: 'FICE',
+    sub: 'Institute Enrollment Website',
+    tagline: 'Dynamic course pages, query-param registration, and silky Framer carousels.',
+    liveHref: 'https://www.fortuneudupi.in/',
+    githubHref: 'https://github.com/Gagan-poojari/',
+    cat: 'Frontend',
+    accent: '#4F6EF7',
+    stack: ['Next.js', 'React', 'Tailwind CSS', 'Framer Motion', 'Swiper.js', 'EmailJS', 'next/image'],
+    bullets: [
+      'Responsive marketing site - course catalog, faculty highlights, student testimonials, and institute info.',
+      'Next.js App Router with dynamic course detail pages, query-parameter registration, and EmailJS enrollment forms.',
+      'Swiper carousels, Framer Motion scroll animations, and mobile hamburger nav with smooth in-page scrolling.',
+    ],
+  },
+  {
+    id: 'sufh',
+    num: '07',
     title: 'Sri Udupi Food Hub',
-    description:
-      "Built Sri Udupi Food Hub, a solo-freelance restaurant website project that is meticulously designed in accordance to the beautiful culture and flavours of Udupi cuisine.",
-    features: [
-      'Developed with React, Node.js, and Express.js to create a dynamic and responsive user interface.',
-      'Utilized Tailwind CSS for efficient styling and responsive design.',
-      'Implemented Next.js for efficient server-side rendering and routing.',
-      'Used Optical Character Recognition (OCR) to extract menu text from menu card images.',
-      'Used Pexels API to fetch high-quality images for the website.',
-      'Integrated maps with react-leaflet to display location information and haversine to fetch distance.',
-      'Utilized Framer Motion for smooth animations and transitions.',
-      'Utilized Git for version control and collaboration.',
-      'Integrated EmailJS for contact form functionality.',
+    sub: 'Restaurant & Digital Menu',
+    tagline: 'A flipbook menu, coverflow hero, and the soul of Udupi on every screen.',
+    liveHref: 'https://github.com/Gagan-poojari/Sri-Udupi-Food-Hub/tree/main',
+    githubHref: 'https://github.com/Gagan-poojari/Sri-Udupi-Food-Hub/tree/main',
+    cat: 'Frontend',
+    accent: '#22C55E',
+    stack: ['Next.js', 'React', 'Tailwind CSS', 'Swiper.js', 'react-pageflip', 'Framer Motion'],
+    bullets: [
+      'Fully responsive restaurant site - hero carousel, category-based menu browsing, and anchor navigation.',
+      'Interactive flipbook-style digital menu using react-pageflip with JSON-driven categories and prices.',
+      'Swiper.js coverflow hero with autoplay and pagination; custom gradients for desktop and mobile.',
     ],
-  };
-
-  const FiceData = {
-    title: 'Fortune Institute of Computer Education',
-    description:
-      "Built Fortune Institute of Computer Education, a joint-freelance project alongside a friend to connect students and teachers through a secure and user-friendly platform.",
-    features: [
-      'Developed with React, Node.js, and Express.js to create a dynamic and responsive user interface.',
-      'Utilized Tailwind CSS for efficient styling and responsive design.',
-      'Implemented Next.js for efficient server-side rendering and routing.',
-      'Utilized Framer Motion for smooth animations and transitions.',
-      'Utilized Git for version control and collaboration.',
+  },
+  {
+    id: 'portfolio',
+    num: '08',
+    title: 'Portfolio',
+    sub: 'This Very Website',
+    tagline: 'Rotating steel flowers, scanline beams, and obsessive attention to detail.',
+    liveHref: '/',
+    githubHref: 'https://github.com/Gagan-poojari/',
+    cat: 'Frontend',
+    accent: '#A855F7',
+    stack: ['Next.js', 'React', 'Tailwind CSS', 'Framer Motion', 'EmailJS'],
+    bullets: [
+      'Cinematic dark experience - scanline effects, particle systems, rotating parallax elements, scroll-driven animations.',
+      'Custom skills section with per-category glow accents, animated badge grid, and stat counters.',
+      'Horizontal scroll project section with drag support, animated detail panels, and category filtering.',
     ],
-  };
-
-  const NammaBenakaData = {
-    title: 'NammaBenaka - Smarter Loan Management Platform',
-    description:
-      'Built NammaBenaka, a full-stack fintech platform focused on simplifying loan access for individuals and businesses through a fast, transparent, and user-centric digital experience.',
-    features: [
-      'Designed and developed a full-stack loan management platform using React, Next.js, Node.js, and Express.',
-      'Implemented secure authentication and role-based authorization using JWT.',
-      'Integrated MongoDB with Mongoose for structured, scalable financial data handling.',
-      'Built clean and intuitive dashboards for users and administrators.',
-      'Focused on trust-first UI/UX for financial credibility and ease of use.',
-      'Created a responsive, mobile-first interface using Tailwind CSS.',
-      'Used Axios for efficient and secure client–server communication.',
-      'Applied Framer Motion for subtle, professional UI animations.',
+  },
+  {
+    id: 'nn',
+    num: '09',
+    title: 'Neural Net from Scratch',
+    sub: 'NumPy-only Digit Classifier',
+    tagline: 'Backprop, gradient descent, 90% accuracy - zero ML libraries.',
+    liveHref: 'https://github.com/Gagan-poojari/',
+    githubHref: 'https://github.com/Gagan-poojari/',
+    cat: 'ML & AI',
+    accent: '#F59E0B',
+    stack: ['Python', 'NumPy', 'Matplotlib', 'MNIST'],
+    bullets: [
+      'Handwritten digit classifier from scratch using only NumPy - no TensorFlow, no PyTorch.',
+      'Implemented forward pass, backpropagation, and gradient descent manually from first principles.',
+      'Achieved 90% test accuracy on MNIST, validating against industry-standard benchmarks.',
     ],
-  };
+  },
+];
 
+const CATS = ['All', 'Full-Stack', 'ML & AI', 'MLOps', 'Frontend'];
 
-  const PortfolioData = {
-    title: 'Portfolio - A website about me',
-    description:
-      "Built a personal portfolio project to showcase my skills, projects, couses completes and experiences with the motive to connect with the world and build a successful career.",
-    features: [
-      'Built a personal portfolio website using React, Next.js, and Tailwind CSS.',
-      'Implemented Next.js for efficient server-side rendering and routing.',
-      'Utilized Framer Motion for smooth animations and transitions.',
-      'Utilized various frontend frameworks and libraries and tools.',
-      'Utilized Git for version control and collaboration.',
-      'Integrated EmailJS for contact form functionality.',
-    ],
-  };
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
 
+function hex2rgba(hex, a) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+// ─── PROJECT ROW ─────────────────────────────────────────────────────────────
+
+function ProjectRow({ project, index, isExpanded, onToggle }) {
+  const { num, title, sub, tagline, accent, stack, bullets, liveHref, githubHref } = project;
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-80px' });
+  const isEven = index % 2 === 0;
 
   return (
-    <section id="projects" className="relative w-full py-10 bg-[#000000] ">
-      <h2
-        style={{
-          textShadow:
-            '0px 4px 8px rgba(255,255,255,.05),0px 8px 30px rgba(255,255,255,.25)',
-        }}
-        className="relative z-2 mb-10 text-4xl font-medium tracking-tight sm:text-5xl md:text-6xl text-balance text-center"
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 48 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      className="relative overflow-hidden"
+    >
+      {/* Divider */}
+      <div
+        className="w-full h-px mb-0"
+        style={{ background: `linear-gradient(90deg, transparent, ${hex2rgba(accent, 0.18)}, transparent)` }}
+      />
+
+      <div
+        className={`
+          group relative flex flex-col md:flex-row items-stretch gap-0
+          transition-all duration-500 cursor-pointer
+          ${isExpanded ? 'bg-[rgba(255,255,255,0.025)]' : 'hover:bg-[rgba(255,255,255,0.018)]'}
+          ${isEven ? '' : 'md:flex-row-reverse'}
+        `}
+        onClick={onToggle}
       >
-        <p className="mb-3 text-xs font-normal tracking-widest text-[#fff] dark:text-white/70 uppercase md:text-sm">
-          BUILT WITH A PURPOSE
-        </p>
-        <span className='text-[#fff]'>
-          <span>MY &nbsp;</span>
-          <span className="text-colorfull animate-gradient-x font-nyght tracking-wide ">
-            PROJECTS
-          </span>
-        </span>
-      </h2>
+        {/* ── Project Number (large ghost) */}
+        <div
+          className="absolute select-none pointer-events-none font-black leading-none z-0 overflow-hidden"
+          style={{
+            fontFamily: "'Syne', sans-serif",
+            fontSize: 'clamp(80px, 14vw, 160px)',
+            color: hex2rgba(accent, isExpanded ? 0.07 : 0.04),
+            top: '50%',
+            transform: 'translateY(-50%)',
+            ...(isEven ? { right: '0.5rem' } : { left: '0.5rem' }),
+            transition: 'color 0.4s',
+            maxHeight: '100%',
+            lineHeight: 1,
+          }}
+        >
+          {num}
+        </div>
 
-      <div className="relative mx-auto flex w-full">
-        <div className="mx-auto grid grid-cols-1 gap-x-6 p-5 lg:p-0 gap-y-6 md:grid-cols-2 lg:flex lg:max-w-[85%] lg:flex-col lg:gap-y-24">
-
-          <div className='flex text-[#fff] items-center gap-10'>
-            <ProjectCard
-              href="https://pleeb-meme-the-mess.streamlit.app/"
-              title="A platforn to make the lives of content creators and video editors easy, upload video and see the magic happen."
-              imgSrc="/projects/pleeb.png"
-              shadowColor="#DB2777"
-              gradientBg="linear-gradient(188.62deg, #6B0D33 49.9%, #DB2777 81.7%, #F472B6 93.88%, #F9D793 113.5%)"
-              textColor="text-pink-300"
+        {/* ── Visual pane */}
+        <div className={`relative md:w-[48%] w-full flex-shrink-0 overflow-hidden`}
+          style={{ minHeight: '280px', aspectRatio: '16/10' }}>
+          {/* Placeholder visual - replace with next/image when you have screenshots */}
+          <div
+            className="absolute inset-0 flex items-center justify-center transition-all duration-700 group-hover:scale-[1.03]"
+            style={{
+              background: `radial-gradient(ellipse at 40% 50%, ${hex2rgba(accent, 0.15)}, transparent 70%), linear-gradient(135deg, #0a0a0a 0%, #111 100%)`,
+            }}
+          >
+            {/* Grid texture overlay */}
+            <div className="absolute inset-0 opacity-20"
+              style={{
+                backgroundImage: `linear-gradient(${hex2rgba(accent, 0.15)} 1px, transparent 1px), linear-gradient(90deg, ${hex2rgba(accent, 0.15)} 1px, transparent 1px)`,
+                backgroundSize: '32px 32px',
+              }}
             />
-            <ProjectCardDesc
-              href="https://pleeb-meme-the-mess.streamlit.app/"
-              title={PleebData.title}
-              description={PleebData.description}
-              features={PleebData.features}
-              techStack={ProjectsData.PleebTechStack}
-            />
+            {/* Title monogram */}
+            <span
+              className="relative z-10 font-black tracking-tighter select-none"
+              style={{
+                fontFamily: "'Syne', sans-serif",
+                fontSize: 'clamp(52px, 8vw, 96px)',
+                color: hex2rgba(accent, 0.22),
+                letterSpacing: '-0.04em',
+              }}
+            >
+              {title.slice(0, 3).toUpperCase()}
+            </span>
           </div>
 
-          <div className='flex text-[#fff] items-center gap-10'>
-            <ProjectCard
-              href="https://github.com/Gagan-poojari/Sri-Udupi-Food-Hub/tree/main"
-              title="A restaurant webiste meticulously designed in accordance to the beautiful culture and flavours of Udupi cuisine."
-              imgSrc="/projects/sufh.png"
-              shadowColor="#14B8A6"
-              gradientBg="linear-gradient(188.62deg, #134E4A 49.9%, #14B8A6 81.7%, #5EEAD4 93.88%, #F9D793 113.5%)"
-              textColor="text-teal-300"
-            />
-            <ProjectCardDesc
-              href="https://github.com/Gagan-poojari/Sri-Udupi-Food-Hub/tree/main"
-              title={SufhData.title}
-              description={SufhData.description}
-              features={SufhData.features}
-              techStack={ProjectsData.SufhTechStack}
-            />
+          {/* Category badge */}
+          <div className="absolute top-4 left-4 z-20">
+            <span
+              className="text-[9px] font-mono tracking-[0.2em] uppercase px-3 py-1.5 rounded-full backdrop-blur-sm border"
+              style={{
+                color: accent,
+                borderColor: hex2rgba(accent, 0.3),
+                background: hex2rgba(accent, 0.1),
+              }}
+            >
+              {project.cat}
+            </span>
           </div>
 
-          <div className='flex text-[#fff] items-center gap-10'>
-            <ProjectCard
-              href="https://www.fortuneudupi.in/"
-              title="A platform connecting students and instructors for enhanced learning experiences."
-              imgSrc="/projects/fice.png"
-              shadowColor="#2932CB"
-              gradientBg="linear-gradient(188.62deg, #070E57 49.9%, #2932CB 81.7%, #7980FF 93.88%, #F9D793 113.5%)"
-              textColor="text-blue-300"
-            />
-            <ProjectCardDesc
-              href="https://www.fortuneudupi.in/"
-              title={FiceData.title}
-              description={FiceData.description}
-              features={FiceData.features}
-              techStack={ProjectsData.FiceTechStack}
-            />
+          {/* Accent line left/right edge */}
+          <div
+            className={`absolute top-0 bottom-0 w-[2px] transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`}
+            style={{
+              background: `linear-gradient(to bottom, transparent, ${accent}, transparent)`,
+              [isEven ? 'right' : 'left']: 0,
+            }}
+          />
+        </div>
+
+        {/* ── Content pane */}
+        <div className={`relative z-10 flex-1 min-w-0 flex flex-col justify-center px-8 md:px-12 py-10 md:py-14 overflow-hidden`}>
+          <p
+            className="text-[9px] font-mono tracking-[0.28em] uppercase mb-3"
+            style={{ color: hex2rgba(accent, 0.7) }}
+          >
+            Project {num} &nbsp;·&nbsp; {sub}
+          </p>
+
+          <h3
+            className="font-black leading-[0.92] tracking-tight mb-4 break-words min-w-0"
+            style={{
+              fontFamily: "'Syne', sans-serif",
+              fontSize: 'clamp(28px, 3.5vw, 52px)',
+              color: '#fff',
+            }}
+          >
+            {title}
+          </h3>
+
+          <p className="text-[13px] text-white/50 leading-relaxed mb-6 max-w-md">{tagline}</p>
+
+          {/* Stack pills */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {stack.slice(0, 6).map(s => (
+              <span
+                key={s}
+                className="text-[9.5px] font-mono px-2.5 py-1 rounded border transition-all duration-300"
+                style={{
+                  color: isExpanded ? accent : 'rgba(255,255,255,0.4)',
+                  borderColor: isExpanded ? hex2rgba(accent, 0.3) : 'rgba(255,255,255,0.1)',
+                  background: isExpanded ? hex2rgba(accent, 0.07) : 'transparent',
+                }}
+              >
+                {s}
+              </span>
+            ))}
+            {stack.length > 6 && (
+              <span className="text-[9.5px] font-mono px-2.5 py-1 rounded border border-white/10 text-white/25">
+                +{stack.length - 6}
+              </span>
+            )}
           </div>
 
-          <div className="flex text-[#fff] items-center gap-10">
-            <ProjectCard
-              href="https://www.nammabenaka.in/"
-              title="A full-stack loan management platform with secure authentication and modern UI."
-              imgSrc="/projects/nammabenaka.png"
-              shadowColor="#F97316"
-              gradientBg="linear-gradient(188.62deg, #431407 49.9%, #F97316 81.7%, #FDBA74 93.88%, #F9D793 113.5%)"
-              textColor="text-orange-300"
-            />
-            <ProjectCardDesc
-              href="https://github.com/Gagan-poojari/mybenaka"
-              title={NammaBenakaData.title}
-              description={NammaBenakaData.description}
-              features={NammaBenakaData.features}
-              techStack={ProjectsData.NammaBenakaTechStack}
-            />
+          {/* Live + GitHub buttons */}
+          <div className="flex gap-2 flex-wrap mb-5">
+            <Link
+              href={liveHref}
+              target="_blank"
+              onClick={e => e.stopPropagation()}
+              className="text-[9.5px] font-mono tracking-[0.15em] uppercase px-4 py-2 rounded-lg border transition-all duration-200 hover:scale-[1.03]"
+              style={{
+                color: accent,
+                borderColor: hex2rgba(accent, 0.35),
+                background: hex2rgba(accent, 0.1),
+              }}
+            >
+              View Live ↗
+            </Link>
+            <Link
+              href={githubHref}
+              target="_blank"
+              onClick={e => e.stopPropagation()}
+              className="text-[9.5px] font-mono tracking-[0.15em] uppercase px-4 py-2 rounded-lg border border-white/15 bg-white/[0.04] text-white/55 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
+            >
+              GitHub →
+            </Link>
           </div>
 
-
-          <div className='flex text-[#fff] items-center gap-10'>
-            <ProjectCard
-              href="/projects/portfolio"
-              title="Design Unleashed: A Captivating Portfolio Showcasing Innovative Web Development and UI/UX"
-              imgSrc="/projects/portfolio.png"
-              shadowColor="#DB2777"
-              gradientBg="linear-gradient(188.62deg, #6B0D33 49.9%, #DB2777 81.7%, #F472B6 93.88%, #F9D793 113.5%)"
-              textColor="text-pink-300"
-            />
-            <ProjectCardDesc
-              href="/projects/portfolio"
-              title={PortfolioData.title}
-              description={PortfolioData.description}
-              features={PortfolioData.features}
-              techStack={ProjectsData.PortfolioTechStack}
-            />
+          {/* Expand toggle */}
+          <div className="flex items-center gap-3">
+            <motion.div
+              animate={{ rotate: isExpanded ? 45 : 0 }}
+              transition={{ duration: 0.3 }}
+              className="w-8 h-8 rounded-full border flex items-center justify-center text-sm flex-shrink-0"
+              style={{
+                borderColor: isExpanded ? accent : 'rgba(255,255,255,0.15)',
+                color: isExpanded ? accent : 'rgba(255,255,255,0.4)',
+                background: isExpanded ? hex2rgba(accent, 0.1) : 'transparent',
+              }}
+            >
+              +
+            </motion.div>
+            <span
+              className="text-[10px] font-mono tracking-[0.2em] uppercase transition-colors duration-300"
+              style={{ color: isExpanded ? accent : 'rgba(255,255,255,0.3)' }}
+            >
+              {isExpanded ? 'Collapse' : 'View Details'}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* <Link
-        className="group flex w-fit items-center justify-center gap-2 text-[#747474] transition-colors hover:text-black dark:text-white-1 mx-auto md:mt-20"
-        href="/projects"
+      {/* ── Expanded Detail Panel */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            key="detail"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <div
+              className="px-8 md:px-16 py-8 md:py-12 grid md:grid-cols-2 gap-10"
+              style={{
+                borderTop: `1px solid ${hex2rgba(accent, 0.12)}`,
+                background: `linear-gradient(to bottom, ${hex2rgba(accent, 0.04)}, transparent)`,
+              }}
+            >
+              {/* Bullets */}
+              <div>
+                <p className="text-[9px] font-mono tracking-[0.25em] uppercase mb-4" style={{ color: hex2rgba(accent, 0.6) }}>
+                  What I built
+                </p>
+                <ul className="flex flex-col gap-4">
+                  {bullets.map((b, i) => (
+                    <motion.li
+                      key={i}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.07, duration: 0.4 }}
+                      className="flex gap-3 items-start text-[13px] leading-relaxed text-white/55"
+                    >
+                      <span
+                        className="w-[5px] h-[5px] rounded-full mt-[6px] shrink-0"
+                        style={{ background: accent }}
+                      />
+                      <span>{b}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Stack + Links */}
+              <div className="flex flex-col gap-8">
+                <div>
+                  <p className="text-[9px] font-mono tracking-[0.25em] uppercase mb-4" style={{ color: hex2rgba(accent, 0.6) }}>
+                    Full Tech Stack
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {stack.map((s, i) => (
+                      <motion.span
+                        key={s}
+                        initial={{ opacity: 0, scale: 0.85 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.04, duration: 0.3 }}
+                        className="text-[10px] font-mono px-3 py-1.5 rounded-md border"
+                        style={{
+                          color: accent,
+                          borderColor: hex2rgba(accent, 0.25),
+                          background: hex2rgba(accent, 0.07),
+                        }}
+                      >
+                        {s}
+                      </motion.span>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[9px] font-mono tracking-[0.25em] uppercase mb-4" style={{ color: hex2rgba(accent, 0.6) }}>
+                    Links
+                  </p>
+                  <div className="flex gap-3 flex-wrap">
+                    <Link
+                      href={liveHref}
+                      target="_blank"
+                      onClick={e => e.stopPropagation()}
+                      className="text-[10px] font-mono tracking-wider uppercase px-5 py-2.5 rounded-lg border transition-all duration-200 hover:scale-[1.03]"
+                      style={{
+                        color: accent,
+                        borderColor: hex2rgba(accent, 0.35),
+                        background: hex2rgba(accent, 0.1),
+                      }}
+                    >
+                      View Live ↗
+                    </Link>
+                    <Link
+                      href={githubHref}
+                      target="_blank"
+                      onClick={e => e.stopPropagation()}
+                      className="text-[10px] font-mono tracking-wider uppercase px-5 py-2.5 rounded-lg border border-white/15 bg-white/[0.04] text-white/55 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
+                    >
+                      GitHub →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bottom divider */}
+      <div
+        className="w-full h-px"
+        style={{ background: `linear-gradient(90deg, transparent, ${hex2rgba(accent, 0.18)}, transparent)` }}
+      />
+    </motion.div>
+  );
+}
+
+// ─── MAIN SECTION ─────────────────────────────────────────────────────────────
+
+export default function ProjectSection() {
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [expandedId, setExpandedId] = useState(null);
+
+  const visible = activeFilter === 'All'
+    ? PROJECTS
+    : PROJECTS.filter(p => p.cat === activeFilter);
+
+  const handleToggle = (id) => {
+    setExpandedId(prev => prev === id ? null : id);
+  };
+
+  return (
+    <section id="projects" className="relative bg-black py-24 overflow-hidden">
+
+      {/* Background grid atmosphere */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.016) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.016) 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
+          maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
+        }}
+      />
+
+      {/* ── Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 32 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.7 }}
+        className="relative z-10 text-center px-6 mb-14"
       >
-        See more projects
-        <div className="size-[25px] overflow-hidden rounded-full border border-neutral-300 bg-white-1/50 transition-all duration-500 group-hover:bg-neutral-200 dark:border-white/10 dark:bg-white/5 dark:group-hover:bg-white/10">
-          <div className="flex w-12 -translate-x-1/2 transition-transform duration-500 ease-in-out group-hover:translate-x-0">
-            <span className="flex size-6">
-              <ArrowIcon />
-            </span>
-            <span className="flex size-6">
-              <ArrowIcon />
-            </span>
-          </div>
-        </div>
-      </Link> */}
+        <p className="text-[9px] tracking-[0.4em] uppercase text-white/25 mb-5 font-mono">
+          ◈ &nbsp; Selected Work &nbsp; ◈
+        </p>
+        <h2
+          className="font-black leading-[0.88] tracking-tight"
+          style={{
+            fontFamily: "'Syne', sans-serif",
+            fontSize: 'clamp(56px, 10vw, 110px)',
+            color: '#fff',
+          }}
+        >
+          MY<br />
+          <span
+            className="bg-clip-text text-transparent"
+            style={{ backgroundImage: 'linear-gradient(90deg, #F97316, #DB2777, #A855F7, #0194E2)' }}
+          >
+            PROJECTS
+          </span>
+        </h2>
+        <p className="mt-5 text-[10px] font-mono tracking-widest text-white/20 uppercase">
+          Click any row to expand &nbsp;·&nbsp; {PROJECTS.length + 1}+ projects
+        </p>
+      </motion.div>
+
+      {/* ── Filter bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: 0.15 }}
+        className="relative z-10 flex justify-center gap-2 flex-wrap px-6 mb-14"
+      >
+        {CATS.map(cat => (
+          <button
+            key={cat}
+            onClick={() => { setActiveFilter(cat); setExpandedId(null); }}
+            className="text-[10px] font-mono tracking-[0.2em] uppercase px-4 py-2 rounded-full border transition-all duration-200 outline-none"
+            style={{
+              borderColor: activeFilter === cat ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
+              background: activeFilter === cat ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)',
+              color: activeFilter === cat ? '#fff' : 'rgba(255,255,255,0.4)',
+            }}
+          >
+            {cat}
+          </button>
+        ))}
+      </motion.div>
+
+      {/* ── Project rows */}
+      <div className="relative z-10 max-w-7xl mx-auto px-0 md:px-6">
+        <AnimatePresence mode="popLayout">
+          {visible.map((project, index) => (
+            <ProjectRow
+              key={project.id}
+              project={project}
+              index={index}
+              isExpanded={expandedId === project.id}
+              onToggle={() => handleToggle(project.id)}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
 
     </section>
   );
-};
-
-
-const ProjectCardDesc = ({ href, title, description, features = [], techStack = [] }) => {
-  return (
-    <div className="hidden lg:sticky lg:block w-[60%] lg:max-h-[500px] lg:overflow-y-scroll custom-scrollbar1">
-      <div className="sticky top-40">
-        <div className="flex">
-          <div className="flex flex-col items-start">
-            <Link href={href} target="_blank" className=" flex items-center gap-5">
-              <div aria-hidden="true" className="font-bold text-lg text-blue-700" > <FaExternalLinkAlt /> </div>
-              <h3 className="text-foreground text-2xl font-bold ">{title}</h3>
-
-            </Link>
-            <p className="text-muted-foreground my-2 text-base font-light">{description}</p>
-
-            <ul className="text-accent-foreground/85 mt-4 flex flex-col gap-y-2 text-base">
-              {features.map((text, i) => (
-                <li key={i} className="flex items-center text-sm">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="mt-1 mr-2 size-5 shrink-0 fill-blue-600 text-blue-600 dark:text-blue-400 bg-blue-600/20 lg:bg-white-1 dark:lg:bg-black"
-                  >
-                    <path d="M12 1C12 1 12 8 10 10C8 12 1 12 1 12C1 12 8 12 10 14C12 16 12 23 12 23C12 23 12 16 14 14C16 12 23 12 23 12C23 12 16 12 14 10C12 8 12 1 12 1Z" />
-                  </svg>
-                  {text}
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-10 flex flex-wrap gap-3 text-sm">
-              {techStack.map(({ name, icon }, i) => (
-                <div key={i} style={{ opacity: 1, transform: 'none' }}>
-                  <span
-                    data-slot="badge"
-                    className="inline-flex items-center justify-center rounded-lg border px-3 py-1 text-sm w-fit whitespace-nowrap shrink-0 gap-2 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-[color,box-shadow] overflow-hidden text-black dark:text-white border-white-3 dark:bg-neutral-900 dark:border-white/[0.14] bg-white-2"
-                  >
-                    <img height="16" width="16" src={icon} alt={name} />
-                    {name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const ProjectCard = ({ href, title, imgSrc, gradientBg, shadowColor, textColor }) => (
-  <div className="project-card flex w-full flex-row ">
-    <div className="flex flex-col ">
-      <a
-        href={href}
-        target="_blank"
-        draggable={false}
-        className="relative cursor-pointer overflow-hidden rounded-2xl border border-white-3 dark:border-white/15 bg-[#f2f2f20c] p-1.5 shadow-2xl lg:h-[560px] lg:rounded-3xl lg:p-2"
-      >
-        <div
-          className="group relative flex size-full flex-col items-center justify-between overflow-hidden rounded-xl lg:rounded-2xl dark:bg-linear-to-b from-black/40 to-transparent transition-all duration-300"
-        >
-          <div style={{ background: gradientBg }} className="absolute inset-0 -z-1" />
-          <div className="hidden w-full flex-row items-center justify-between px-12 py-8 lg:flex" style={{ color: textColor }}>
-            <h3 className="max-w-[90%] text-2xl">{title}</h3>
-            <ArrowIcon />
-          </div>
-          <Image
-            alt={title}
-            loading="lazy"
-            width={1203}
-            height={753}
-            decoding="async"
-            className="lg:group-hover:translsate-y-10 w-full max-w-[85%] translate-y-5 -rotate-3 rounded-t-lg border-[1.5px] border-white/20 transition-all duration-300 will-change-transform lg:block lg:rotate-0 lg:group-hover:scale-[1.08] lg:group-hover:-rotate-3"
-            style={{ boxShadow: `0 0 30px ${shadowColor}` }}
-            src={imgSrc}
-          />
-        </div>
-      </a>
-    </div>
-  </div>
-);
-
-const ArrowIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucide-arrow-right m-auto size-[14px]"
-  >
-    <path d="M5 12h14" />
-    <path d="m12 5 7 7-7 7" />
-  </svg>
-);
-
-export default ProjectSection;
+}

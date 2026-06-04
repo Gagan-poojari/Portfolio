@@ -1,138 +1,293 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaBars, FaTimes } from 'react-icons/fa';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import Link from 'next/link';
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
 
 const navLinks = [
-  { name: 'Skills', href: '#skills' },
-  { name: 'Courses', href: '#courses' },
-  { name: 'Projects', href: '#projects' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'Skills',    href: '#skills'   },
+  { name: 'Courses',   href: '#courses'  },
+  { name: 'Projects',  href: '#projects' },
+  { name: 'Contact',   href: '#contact'  },
 ];
 
-const NavBar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [shouldCollapse, setShouldCollapse] = useState(false);
+const socials = [
+  { name: 'GitHub',   url: 'https://github.com/Gagan-poojari',                      icon: FaGithub,   accent: '#ffffff' },
+  { name: 'LinkedIn', url: 'https://www.linkedin.com/in/gagan-poojari-840744319/',   icon: FaLinkedin, accent: '#297bc9' },
+];
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!isOpen && window.scrollY > 20) {
-        setShouldCollapse(true);
-      } else if (window.scrollY <= 20) {
-        setShouldCollapse(false);
-      }
+const NavLink = ({ href, name }) => {
+  const ref = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const sx = useSpring(x, { stiffness: 300, damping: 20 });
+  const sy = useSpring(y, { stiffness: 300, damping: 20 });
+  const [hovered, setHovered] = useState(false);
 
-      if (isOpen && window.scrollY > 20) {
-        setIsOpen(false);
-        setShouldCollapse(true);
-      }
-    };
+  const onMove = useCallback((e) => {
+    const r = ref.current?.getBoundingClientRect();
+    if (!r) return;
+    x.set(((e.clientX - r.left) / r.width - 0.5) * 8);
+    y.set(((e.clientY - r.top)  / r.height - 0.5) * 4);
+  }, [x, y]);
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isOpen]);
-
-  const wrapperVariants = {
-    expanded: {
-      width: '100%',
-      height: 'auto',
-      borderRadius: '1.5rem',
-      padding: '1.25rem',
-      top: 0,
-      left: 0,
-      transition: { duration: 0.6, ease: 'easeInOut' },
-    },
-    collapsed: {
-      width: '3rem',
-      height: '3rem',
-      // borderRadius: '9999px',
-      padding: '0rem',
-      top: '1rem',
-      left: '1rem',
-      // transition: { duration: 0.6, ease: 'easeInOut' },
-    },
-  };
+  const onLeave = useCallback(() => { x.set(0); y.set(0); setHovered(false); }, [x, y]);
 
   return (
     <motion.div
-      variants={wrapperVariants}
-      initial="expanded"
-      animate={shouldCollapse && !isOpen ? 'collapsed' : 'expanded'}
-      className="fixed z-50 max-w-full"
-      style={{ position: 'fixed' }}
+      ref={ref}
+      style={{ x: sx, y: sy }}
+      onMouseMove={onMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={onLeave}
+      className="relative"
     >
-      <motion.div
-        layout
-        transition={{ duration: 0.6, ease: 'easeInOut' }}
-        className={`flex items-center justify-between text-white backdrop-blur-md border border-white/10 rounded-full ${
-          shouldCollapse && !isOpen
-            ? 'aspect-square p-0 justify-center items-center border border-[#fff]/60'
-            : 'px-6 py-3'
-        }`}
+      <Link
+        href={href}
+        className="relative text-sm font-medium tracking-wide transition-colors duration-200"
+        style={{ color: hovered ? '#fff' : 'rgba(255,255,255,0.55)' }}
       >
-        {!shouldCollapse || isOpen ? (
-          <>
-            <Link href="/">
-              <img src={"/sign.svg"} alt="Gagan Poojari" className='w-[69px] lg:w-[88px] h-10 object-cover' />
-            </Link>
-            <div className="gap-10 lg:flex md:flex hidden items-center">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="relative text-md font-medium text-muted-foreground transition hover:text-white"
-                >
-                  <span className="relative group">
-                    {link.name}
-                    <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-[#fff] transition-all duration-300 group-hover:w-full" />
-                  </span>
-                </Link>
-              ))}
-            </div>
-            <button
-              className={`lg: text-xl text-white ${isOpen ? "" : "hidden"}`}
-              onClick={() => setIsOpen(false)}
-            >
-              <FaTimes />
-            </button>
-          </>
-        ) : (
-          <button
-            className="text-xl text-white flex justify-center items-center w-full h-full rounded-full"
-            onClick={() => setIsOpen(true)}
-          >
-            <FaBars />
-          </button>
-        )}
-      </motion.div>
+        {name}
+        <span
+          className="absolute -bottom-[2px] left-0 h-[1.5px] transition-all duration-300"
+          style={{
+            width: hovered ? '100%' : '0%',
+            background: 'linear-gradient(90deg,#297bc9,#c7061c)',
+          }}
+        />
+      </Link>
+    </motion.div>
+  );
+};
 
-      {/* Mobile Dropdown */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.nav
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.35, ease: 'easeInOut' }}
-            className="overflow-hidden backdrop-blur-md lg:hidden border border-white/10 rounded-xl mt-2"
+const NavBar = () => {
+  const [scrolled, setScrolled]     = useState(false);
+  const [progress, setProgress]     = useState(0);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const ticking = useRef(false);
+  const [hovered, setHovered] = useState(null);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (ticking.current) return;
+      ticking.current = true;
+      requestAnimationFrame(() => {
+        const sy  = window.scrollY;
+        const max = document.body.scrollHeight - window.innerHeight;
+        setScrolled(sy > 30);
+        setProgress(max > 0 ? (sy / max) * 100 : 0);
+        if (sy > 30 && mobileOpen) setMobileOpen(false);
+        ticking.current = false;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [mobileOpen]);
+
+  return (
+    <>
+      {/* Scroll progress bar */}
+      <div
+        className="fixed top-0 left-0 z-[200] h-[2px] pointer-events-none transition-opacity duration-500"
+        style={{
+          width: `${progress}%`,
+          // background: 'linear-gradient(90deg,#297bc9,#fff 50%,#c7061c)',
+          background: 'linear-gradient(90deg,#000000,#fff)',
+          // background: '#ffffff90',
+          opacity: scrolled ? 1 : 0,
+          transition: 'width 0.08s linear, opacity 0.5s ease',
+        }}
+      />
+
+      {/* Navbar */}
+      <motion.header
+        initial={false}
+        animate={scrolled ? 'scrolled' : 'top'}
+        variants={{
+          top:      { height: 70, backgroundColor: 'rgba(0,0,0,0)' },
+          scrolled: { height: 56, backgroundColor: 'rgba(4,4,8,0.9)' },
+        }}
+        transition={{ duration: 0.45, ease: [0.32, 0.72, 0, 1] }}
+        className="fixed top-0 left-0 right-0 z-[100] flex items-center px-6 lg:px-10"
+        style={{
+          borderBottom: scrolled ? '1px solid rgba(255,255,255,0.07)' : '1px solid transparent',
+          backdropFilter: scrolled ? 'blur(20px)' : 'none',
+          WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
+        }}
+      >
+        {/* Logo */}
+        <Link href="/" className="flex-shrink-0 mr-auto">
+          {/* <motion.img
+            src="/sign.svg"
+            alt="Gagan Poojari"
+            animate={{ width: scrolled ? 88 : 100, opacity: 1 }}
+            initial={{ opacity: 0 }}
+            transition={{ duration: 0.45, ease: [0.32, 0.72, 0, 1] }}
+            className="h-15 object-contain"
+            style={{ filter: 'brightness(0) invert(1)' }}
+          /> */}
+          <img
+            src="/sign.svg"
+            alt="Gagan Poojari"
+            className="h-15 object-contain w-auto max-w-[90px] "
+            style={{ filter: 'brightness(0) invert(1)' }}
+          />
+        </Link>
+
+        {/* Desktop links */}
+        <nav className="hidden md:flex items-center gap-8">
+          {navLinks.map((l) => <NavLink key={l.name} {...l} />)}
+
+          {/* Resume */}
+          <motion.a
+            href="/resume.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover="hover"
+            whileTap={{ scale: 0.96 }}
+            className="relative overflow-hidden text-sm font-medium tracking-wide text-white/55 border border-white/15 px-4 py-[6px] rounded-sm transition-colors duration-200 hover:text-white hover:border-white/35"
           >
-            <div className="flex flex-col items-center px-6 py-4 space-y-4 text-white">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="text-base font-medium text-muted-foreground hover:text-white transition"
+            {/* fill sweep */}
+            <motion.span
+              variants={{ hover: { scaleX: 1 } }}
+              initial={{ scaleX: 0 }}
+              transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+              className="absolute inset-0 origin-left pointer-events-none"
+              style={{ background: 'linear-gradient(90deg,rgba(41,123,201,0.12),rgba(199,6,28,0.08))' }}
+            />
+            <span className="relative">Resume ↗</span>
+          </motion.a>
+        </nav>
+
+        {/* Mobile hamburger */}
+        <button
+          onClick={() => setMobileOpen(v => !v)}
+          aria-label="Toggle menu"
+          className="md:hidden ml-4 flex flex-col gap-[5px] p-1"
+        >
+          <motion.span
+            animate={mobileOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="block w-5 h-[1.5px] bg-white/70 origin-center"
+          />
+          <motion.span
+            animate={mobileOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.2 }}
+            className="block w-5 h-[1.5px] bg-white/70"
+          />
+          <motion.span
+            animate={mobileOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="block w-5 h-[1.5px] bg-white/70 origin-center"
+          />
+        </button>
+      </motion.header>
+
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+            className="fixed left-0 right-0 z-[99] md:hidden bg-[rgba(4,4,8,0.97)] border-b border-white/[0.07]"
+            style={{
+              top: scrolled ? 56 : 70,
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+            }}
+          >
+            {/* Accent line */}
+            <div className="h-[1px]" style={{ background: 'linear-gradient(90deg,#297bc9,transparent 40%,transparent 60%,#c7061c)' }} />
+
+            <div className="flex flex-col px-8 py-6 gap-1">
+              {navLinks.map((l, i) => (
+                <motion.div
+                  key={l.name}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05, duration: 0.25 }}
                 >
-                  {link.name}
-                </Link>
+                  <Link
+                    href={l.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-between py-3 border-b border-white/[0.05] text-sm tracking-wide text-white/45 hover:text-white transition-colors duration-200 group"
+                  >
+                    {l.name}
+                    <span className="text-white/20 group-hover:text-white/60 transition-colors duration-200 text-xs">→</span>
+                  </Link>
+                </motion.div>
               ))}
+
+              <motion.a
+                href="/resume.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.25 }}
+                className="mt-4 text-sm tracking-wide text-white/55 border border-white/12 px-5 py-3 text-center hover:text-white hover:border-white/30 transition-all duration-200 rounded-sm"
+              >
+                Resume ↗
+              </motion.a>
             </div>
-          </motion.nav>
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 1.2, duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+      className="flex items-center justify-center gap-0"
+    >
+      {/* Icons */}
+      <div className="flex items-center gap-4 mb-4">
+        {socials.map(({ name, url, icon: Icon, accent }, i) => (
+          <motion.a
+            key={name}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={name}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.4 + i * 0.1, duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+            onMouseEnter={() => setHovered(name)}
+            onMouseLeave={() => setHovered(null)}
+            className="relative flex items-center justify-center w-11 h-11 rounded-sm border transition-all duration-300"
+            style={{
+              background: hovered === name ? `${accent}12` : 'transparent',
+              borderColor: hovered === name ? `${accent}60` : 'rgba(255,255,255,0.1)',
+              color: hovered === name ? accent : 'rgba(255,255,255,0.35)',
+              fontSize: 18,
+            }}
+          >
+            <Icon />
+
+            {/* Label tooltip */}
+            <AnimatePresence>
+              {hovered === name && (
+                <motion.span
+                  initial={{ opacity: 0, x: 6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 6 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 text-[11px] font-mono tracking-[0.18em] uppercase whitespace-nowrap pointer-events-none"
+                  style={{ color: accent }}
+                >
+                  {name}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.a>
+        ))}
+      </div>
+
+      
+    </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </>
   );
 };
 
