@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
@@ -13,10 +14,11 @@ const PROJECTS = [
     title: 'RUVA',
     sub: 'Full-Stack E-Commerce',
     tagline: 'Traditional Indian ethnic wear - from catalogue to checkout, fully yours.',
-    liveHref: 'https://github.com/Gagan-poojari/',
-    githubHref: 'https://github.com/Gagan-poojari/',
+    liveHref: 'https://ruvaonline.com/',
+    githubHref: 'https://github.com/Gagan-poojari/ruva',
+    image: '/projects/ruva.png',
     cat: 'Full-Stack',
-    accent: '#F97316',
+    accent: '#DB2777',
     stack: ['Next.js', 'React', 'Node.js', 'Express.js', 'MongoDB', 'JWT', 'Razorpay', 'Cloudinary', 'Tailwind CSS', 'Google OAuth', 'Gemini AI', 'EmailJS'],
     bullets: [
       'Product catalog, category browsing, cart, wishlist, and user profiles with complete order history.',
@@ -32,9 +34,10 @@ const PROJECTS = [
     sub: 'AI Video Auto-Censorship',
     tagline: 'Transcribes, detects profanity, and bleeps it - frame-accurate, every time.',
     liveHref: 'https://pleeb-meme-the-mess.streamlit.app/',
-    githubHref: 'https://github.com/Gagan-poojari/',
+    githubHref: 'https://github.com/Gagan-poojari/pleeb',
+    image: '/projects/pleeb.png',
     cat: 'ML & AI',
-    accent: '#DB2777',
+    accent: '#0194E2',
     stack: ['Python', 'FastAPI', 'Whisper', 'FFmpeg', 'MoviePy', 'Pydub', 'Next.js', 'SQLAlchemy', 'SSE', 'REST API'],
     bullets: [
       'AI-powered video censorship: transcribes speech with word-level timestamps, detects profanity, replaces flagged words with bleep/meme audio in perfect sync.',
@@ -49,10 +52,11 @@ const PROJECTS = [
     title: 'MLOps Pipeline',
     sub: 'End-to-End Sentiment Analysis',
     tagline: 'Production-grade NLP pipeline - from raw IMDB data to live predictions.',
-    liveHref: 'https://github.com/Gagan-poojari/',
-    githubHref: 'https://github.com/Gagan-poojari/',
+    liveHref: 'https://github.com/Gagan-poojari/sentiment-mlops',
+    githubHref: 'https://github.com/Gagan-poojari/sentiment-mlops',
+    image: '/projects/mlops.png',
     cat: 'MLOps',
-    accent: '#0194E2',
+    accent: '#F97316',
     stack: ['Python', 'scikit-learn', 'NLTK', 'DVC', 'MLflow', 'DagsHub', 'Flask', 'Prometheus', 'GitHub Actions', 'AWS S3', 'pandas', 'NumPy'],
     bullets: [
       'End-to-end NLP pipeline for binary sentiment classification on IMDB data, serving real-time predictions via Flask UI.',
@@ -69,6 +73,7 @@ const PROJECTS = [
     tagline: 'End-to-end fintech - from borrower onboarding to automated late-fee crons.',
     liveHref: 'https://www.nammabenaka.in/',
     githubHref: 'https://github.com/Gagan-poojari/',
+    image: '/projects/nammabenaka.png',
     cat: 'Full-Stack',
     accent: '#F97316',
     stack: ['Next.js', 'React', 'Node.js', 'Express.js', 'MongoDB', 'JWT', 'Tailwind CSS', 'Recharts', 'Node-Cron', 'bcrypt'],
@@ -85,10 +90,11 @@ const PROJECTS = [
     title: 'HOLMAC Interiors',
     sub: 'Interior Design Portfolio',
     tagline: 'Cinematic entry video, Cloudinary galleries, and every lead captured.',
-    liveHref: 'https://github.com/Gagan-poojari/',
-    githubHref: 'https://github.com/Gagan-poojari/',
+    liveHref: 'https://www.holmacinterior.com/',
+    githubHref: 'https://github.com/Gagan-poojari/holmac_interior',
+    image: '/projects/holmac.png',
     cat: 'Frontend',
-    accent: '#14B8A6',
+    accent: '#F59E0B',
     stack: ['Next.js', 'React', 'Tailwind CSS', 'Cloudinary', 'EmailJS', 'Google Analytics', 'Framer Motion'],
     bullets: [
       'Multi-page marketing site with hero sections, service highlights, product catalogs, and client testimonials.',
@@ -104,7 +110,8 @@ const PROJECTS = [
     sub: 'Institute Enrollment Website',
     tagline: 'Dynamic course pages, query-param registration, and silky Framer carousels.',
     liveHref: 'https://www.fortuneudupi.in/',
-    githubHref: 'https://github.com/Gagan-poojari/',
+    githubHref: 'https://github.com/Gagan-poojari/fice',
+    image: '/projects/fice.png',
     cat: 'Frontend',
     accent: '#4F6EF7',
     stack: ['Next.js', 'React', 'Tailwind CSS', 'Framer Motion', 'Swiper.js', 'EmailJS', 'next/image'],
@@ -122,6 +129,7 @@ const PROJECTS = [
     tagline: 'A flipbook menu, coverflow hero, and the soul of Udupi on every screen.',
     liveHref: 'https://github.com/Gagan-poojari/Sri-Udupi-Food-Hub/tree/main',
     githubHref: 'https://github.com/Gagan-poojari/Sri-Udupi-Food-Hub/tree/main',
+    image: '/projects/sufh.png',
     cat: 'Frontend',
     accent: '#22C55E',
     stack: ['Next.js', 'React', 'Tailwind CSS', 'Swiper.js', 'react-pageflip', 'Framer Motion'],
@@ -136,35 +144,37 @@ const PROJECTS = [
     num: '08',
     title: 'Portfolio',
     sub: 'This Very Website',
-    tagline: 'Rotating steel flowers, scanline beams, and obsessive attention to detail.',
+    tagline: 'Let the world know about me!',
     liveHref: '/',
     githubHref: 'https://github.com/Gagan-poojari/',
+    image: '/projects/portfolio.png',
     cat: 'Frontend',
     accent: '#A855F7',
     stack: ['Next.js', 'React', 'Tailwind CSS', 'Framer Motion', 'EmailJS'],
     bullets: [
       'Cinematic dark experience - scanline effects, particle systems, rotating parallax elements, scroll-driven animations.',
-      'Custom skills section with per-category glow accents, animated badge grid, and stat counters.',
+      'Custom sections with per-category glow accents, animated badge grid, and stat counters.',
       'Horizontal scroll project section with drag support, animated detail panels, and category filtering.',
     ],
   },
-  {
-    id: 'nn',
-    num: '09',
-    title: 'Neural Net from Scratch',
-    sub: 'NumPy-only Digit Classifier',
-    tagline: 'Backprop, gradient descent, 90% accuracy - zero ML libraries.',
-    liveHref: 'https://github.com/Gagan-poojari/',
-    githubHref: 'https://github.com/Gagan-poojari/',
-    cat: 'ML & AI',
-    accent: '#F59E0B',
-    stack: ['Python', 'NumPy', 'Matplotlib', 'MNIST'],
-    bullets: [
-      'Handwritten digit classifier from scratch using only NumPy - no TensorFlow, no PyTorch.',
-      'Implemented forward pass, backpropagation, and gradient descent manually from first principles.',
-      'Achieved 90% test accuracy on MNIST, validating against industry-standard benchmarks.',
-    ],
-  },
+  // {
+  //   id: 'nn',
+  //   num: '09',
+  //   title: 'Neural Net from Scratch',
+  //   sub: 'NumPy-only Digit Classifier',
+  //   tagline: 'Backprop, gradient descent, 90% accuracy - zero ML libraries.',
+  //   liveHref: 'https://github.com/Gagan-poojari/',
+  //   githubHref: 'https://github.com/Gagan-poojari/',
+  //   image: '/projects/nn.png',
+  //   cat: 'ML & AI',
+  //   accent: '#14B8A6',
+  //   stack: ['Python', 'NumPy', 'Matplotlib', 'MNIST'],
+  //   bullets: [
+  //     'Handwritten digit classifier from scratch using only NumPy - no TensorFlow, no PyTorch.',
+  //     'Implemented forward pass, backpropagation, and gradient descent manually from first principles.',
+  //     'Achieved 90% test accuracy on MNIST, validating against industry-standard benchmarks.',
+  //   ],
+  // },
 ];
 
 const CATS = ['All', 'Full-Stack', 'ML & AI', 'MLOps', 'Frontend'];
@@ -227,24 +237,21 @@ function ProjectRow({ project, index, isExpanded, onToggle }) {
           {num}
         </div>
 
-        {/* ── Visual pane */}
-        <div className={`relative md:w-[48%] w-full flex-shrink-0 overflow-hidden`}
+        {/* Placeholder Visual pane */}
+        {/* <div className={`relative md:w-[48%] w-full flex-shrink-0 overflow-hidden`}
           style={{ minHeight: '280px', aspectRatio: '16/10' }}>
-          {/* Placeholder visual - replace with next/image when you have screenshots */}
           <div
             className="absolute inset-0 flex items-center justify-center transition-all duration-700 group-hover:scale-[1.03]"
             style={{
               background: `radial-gradient(ellipse at 40% 50%, ${hex2rgba(accent, 0.15)}, transparent 70%), linear-gradient(135deg, #0a0a0a 0%, #111 100%)`,
             }}
           >
-            {/* Grid texture overlay */}
             <div className="absolute inset-0 opacity-20"
               style={{
                 backgroundImage: `linear-gradient(${hex2rgba(accent, 0.15)} 1px, transparent 1px), linear-gradient(90deg, ${hex2rgba(accent, 0.15)} 1px, transparent 1px)`,
                 backgroundSize: '32px 32px',
               }}
             />
-            {/* Title monogram */}
             <span
               className="relative z-10 font-black tracking-tighter select-none"
               style={{
@@ -258,7 +265,6 @@ function ProjectRow({ project, index, isExpanded, onToggle }) {
             </span>
           </div>
 
-          {/* Category badge */}
           <div className="absolute top-4 left-4 z-20">
             <span
               className="text-[9px] font-mono tracking-[0.2em] uppercase px-3 py-1.5 rounded-full backdrop-blur-sm border"
@@ -271,8 +277,7 @@ function ProjectRow({ project, index, isExpanded, onToggle }) {
               {project.cat}
             </span>
           </div>
-
-          {/* Accent line left/right edge */}
+          
           <div
             className={`absolute top-0 bottom-0 w-[2px] transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`}
             style={{
@@ -280,7 +285,78 @@ function ProjectRow({ project, index, isExpanded, onToggle }) {
               [isEven ? 'right' : 'left']: 0,
             }}
           />
-        </div>
+        </div> */}
+        {/* ── Visual pane */}
+<div
+  className="relative md:w-[48%] w-full flex-shrink-0 overflow-hidden bg-black"
+  style={{ minHeight: '320px' }}
+>
+  <motion.div
+    className="absolute inset-0"
+    whileHover={{ scale: 1.04 }}
+    transition={{ duration: 0.7 }}
+  >
+    <Image
+      src={project.image}
+      alt={title}
+      fill
+      className="object-cover"
+    />
+  </motion.div>
+
+  {/* dark overlay */}
+  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+
+  {/* accent glow */}
+  <div
+    className="absolute inset-0"
+    style={{
+      background: `linear-gradient(
+        135deg,
+        ${hex2rgba(accent, 0.15)},
+        transparent 45%
+      )`,
+    }}
+  />
+
+  {/* category */}
+  <div className="absolute top-5 left-5 z-20">
+    <span
+      className="text-[9px] font-mono tracking-[0.2em] uppercase px-3 py-1.5 rounded-full backdrop-blur-md border"
+      style={{
+        color: accent,
+        borderColor: hex2rgba(accent, 0.35),
+        background: hex2rgba(accent, 0.15),
+      }}
+    >
+      {project.cat}
+    </span>
+  </div>
+
+  {/* project number */}
+  <div
+    className="absolute bottom-4 right-5 z-20 font-black"
+    style={{
+      fontFamily: "'Syne', sans-serif",
+      fontSize: '70px',
+      color: hex2rgba(accent, 0.18),
+      lineHeight: 1,
+    }}
+  >
+    {num}
+  </div>
+
+  {/* accent edge */}
+  <div
+    className={`absolute top-0 bottom-0 w-[2px] ${
+      isExpanded ? 'opacity-100' : 'opacity-0 group-hover:opacity-70'
+    }`}
+    style={{
+      background: `linear-gradient(to bottom, transparent, ${accent}, transparent)`,
+      [isEven ? 'right' : 'left']: 0,
+    }}
+  />
+</div>
 
         {/* ── Content pane */}
         <div className={`relative z-10 flex-1 min-w-0 flex flex-col justify-center px-8 md:px-12 py-10 md:py-14 overflow-hidden`}>
@@ -291,7 +367,7 @@ function ProjectRow({ project, index, isExpanded, onToggle }) {
             Project {num} &nbsp;·&nbsp; {sub}
           </p>
 
-          <h3
+          {/* <h3
             className="font-black leading-[0.92] tracking-tight mb-4 break-words min-w-0"
             style={{
               fontFamily: "'Syne', sans-serif",
@@ -300,7 +376,19 @@ function ProjectRow({ project, index, isExpanded, onToggle }) {
             }}
           >
             {title}
-          </h3>
+          </h3> */}
+          <span
+  className="bg-clip-text text-transparent"
+  style={{
+    backgroundImage: `linear-gradient(
+      90deg,
+      #fff,
+      ${hex2rgba(accent, 0.9)}
+    )`,
+  }}
+>
+  {title}
+</span>
 
           <p className="text-[13px] text-white/50 leading-relaxed mb-6 max-w-md">{tagline}</p>
 
