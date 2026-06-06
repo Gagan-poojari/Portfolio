@@ -33,11 +33,33 @@ const SOCIALS = [
   },
 ];
 
+/* ─────────────────────────────────────────────
+   VALIDATION
+───────────────────────────────────────────── */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function validate(fields) {
+  const errors = {};
+  if (!fields.from_name.trim()) errors.from_name = 'Name is required.';
+  else if (fields.from_name.trim().length < 2) errors.from_name = 'Name is too short.';
+
+  if (!fields.from_email.trim()) errors.from_email = 'Email is required.';
+  else if (!EMAIL_RE.test(fields.from_email.trim())) errors.from_email = 'Enter a valid email address.';
+
+  if (!fields.message.trim()) errors.message = 'Message is required.';
+  else if (fields.message.trim().length < 10) errors.message = 'Message is too short (min 10 chars).';
+
+  return errors;
+}
+
+/* ─────────────────────────────────────────────
+   STATUS CONFIG
+───────────────────────────────────────────── */
 const STATUS_MAP = {
-  idle: { label: '> Send Message', color: 'var(--c-blue)' },
-  sending: { label: '> Transmitting...', color: 'var(--c-yellow)' },
-  success: { label: '> Message Sent ✓', color: 'var(--c-green)' },
-  error: { label: '> Transmission Failed', color: 'var(--c-red)' },
+  idle:        { label: '> Send Message',          color: 'var(--c-blue)' },
+  sending:     { label: '> Transmitting...',        color: 'var(--c-yellow)' },
+  success:     { label: '> Message Sent ✓',         color: 'var(--c-green)' },
+  network_err: { label: '> Network Error — Retry',  color: 'var(--c-red)' },
 };
 
 /* ─────────────────────────────────────────────
@@ -206,38 +228,66 @@ function GlitchText({ text, triggered, style = {} }) {
 /* ─────────────────────────────────────────────
    TERMINAL INPUT FIELD
 ───────────────────────────────────────────── */
-function TerminalField({ label, id, type = 'text', value, onChange, placeholder, rows, maxLength }) {
+function TerminalField({ label, id, type = 'text', value, onChange, placeholder, rows, maxLength, error, onBlur }) {
   const [focused, setFocused] = useState(false);
   const isTextarea = !!rows;
   const Tag = isTextarea ? 'textarea' : 'input';
+  const hasError = !!error;
+
+  const borderColor = hasError
+    ? 'rgba(199,6,28,0.6)'
+    : focused
+    ? 'rgba(41,123,201,0.55)'
+    : 'rgba(255,255,255,0.08)';
+
+  const bgColor = hasError
+    ? 'rgba(199,6,28,0.04)'
+    : focused
+    ? 'rgba(41,123,201,0.04)'
+    : 'rgba(255,255,255,0.02)';
+
+  const shadow = hasError
+    ? '0 0 0 3px rgba(199,6,28,0.07), inset 0 0 20px rgba(199,6,28,0.04)'
+    : focused
+    ? '0 0 0 3px rgba(41,123,201,0.07), inset 0 0 20px rgba(41,123,201,0.04)'
+    : 'none';
 
   return (
     <div style={{ marginBottom: '1.25rem' }}>
       <label htmlFor={id} style={{
         display: 'flex', alignItems: 'center', gap: '6px',
         fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase',
-        color: focused ? 'var(--c-blue)' : 'rgba(255,255,255,0.3)',
+        color: hasError ? 'rgba(199,6,28,0.8)' : focused ? 'var(--c-blue)' : 'rgba(255,255,255,0.3)',
         fontFamily: "'DM Mono', monospace",
         marginBottom: '6px',
         transition: 'color 0.2s',
       }}>
-        <span style={{ color: focused ? 'var(--c-blue)' : 'rgba(255,255,255,0.2)' }}>{'>'}</span>
+        <span style={{ color: hasError ? 'rgba(199,6,28,0.7)' : focused ? 'var(--c-blue)' : 'rgba(255,255,255,0.2)' }}>{'>'}</span>
         {label}
-        {focused && (
+        {focused && !hasError && (
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             style={{ width: '6px', height: '11px', background: 'var(--c-blue)', display: 'inline-block', marginLeft: '2px' }}
           />
         )}
+        {hasError && (
+          <motion.span
+            initial={{ opacity: 0, x: -4 }}
+            animate={{ opacity: 1, x: 0 }}
+            style={{ marginLeft: 'auto', fontSize: '9px', color: 'rgba(199,6,28,0.85)', letterSpacing: '0.05em', textTransform: 'none', fontFamily: "'DM Mono', monospace" }}
+          >
+            ⚠ {error}
+          </motion.span>
+        )}
       </label>
       <div style={{
         position: 'relative',
-        border: `1px solid ${focused ? 'rgba(41,123,201,0.55)' : 'rgba(255,255,255,0.08)'}`,
+        border: `1px solid ${borderColor}`,
         borderRadius: '6px',
-        background: focused ? 'rgba(41,123,201,0.04)' : 'rgba(255,255,255,0.02)',
+        background: bgColor,
         transition: 'all 0.22s ease',
-        boxShadow: focused ? '0 0 0 3px rgba(41,123,201,0.07), inset 0 0 20px rgba(41,123,201,0.04)' : 'none',
+        boxShadow: shadow,
       }}>
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: '6px', zIndex: 1,
@@ -250,11 +300,10 @@ function TerminalField({ label, id, type = 'text', value, onChange, placeholder,
           value={value}
           onChange={onChange}
           onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onBlur={() => { setFocused(false); onBlur?.(); }}
           placeholder={placeholder}
           rows={rows}
           maxLength={maxLength}
-          required
           style={{
             position: 'relative', zIndex: 2,
             width: '100%', background: 'transparent',
@@ -285,6 +334,65 @@ function TerminalField({ label, id, type = 'text', value, onChange, placeholder,
 }
 
 /* ─────────────────────────────────────────────
+   NETWORK ERROR TOAST
+───────────────────────────────────────────── */
+function NetworkErrorToast({ visible, onRetry }) {
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 4 }}
+          transition={{ duration: 0.3 }}
+          style={{
+            marginTop: '12px',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            border: '1px solid rgba(199,6,28,0.3)',
+            background: 'rgba(199,6,28,0.07)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '14px' }}>⚡</span>
+            <div>
+              <p style={{ margin: 0, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(199,6,28,0.9)', fontFamily: "'DM Mono', monospace" }}>
+                Network Error
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Mono', monospace" }}>
+                Message failed to send. Check your connection.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onRetry}
+            style={{
+              flexShrink: 0,
+              fontSize: '10px', fontFamily: "'DM Mono', monospace",
+              letterSpacing: '0.1em', textTransform: 'uppercase',
+              padding: '6px 12px', borderRadius: '6px',
+              border: '1px solid rgba(199,6,28,0.4)',
+              background: 'rgba(199,6,28,0.12)',
+              color: 'rgba(199,6,28,0.9)',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(199,6,28,0.22)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(199,6,28,0.12)'; }}
+          >
+            ↺ Retry
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ─────────────────────────────────────────────
    MAIN CONTACT SECTION
 ───────────────────────────────────────────── */
 const Contact = () => {
@@ -292,8 +400,10 @@ const Contact = () => {
   const formRef = useRef(null);
   const [inView, setInView] = useState(false);
   const [glitchTriggered, setGlitchTriggered] = useState(false);
-  const [status, setStatus] = useState('idle');
+  const [status, setStatus] = useState('idle'); // idle | sending | success | network_err
   const [fields, setFields] = useState({ from_name: '', from_email: '', message: '' });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] });
   const titleY = useTransform(scrollYProgress, [0, 0.5], [20, -10]);
@@ -311,34 +421,62 @@ const Contact = () => {
 
   const setField = useCallback((key, val) => {
     setFields(prev => ({ ...prev, [key]: val }));
-  }, []);
+    // Clear field error on change if field was touched
+    if (touched[key]) {
+      const next = { ...fields, [key]: val };
+      const errs = validate(next);
+      setFieldErrors(prev => ({ ...prev, [key]: errs[key] || '' }));
+    }
+  }, [fields, touched]);
+
+  const handleBlur = useCallback((key) => {
+    setTouched(prev => ({ ...prev, [key]: true }));
+    const errs = validate(fields);
+    setFieldErrors(prev => ({ ...prev, [key]: errs[key] || '' }));
+  }, [fields]);
 
   const progress = Object.values(fields).filter(v => v.trim()).length / 3;
 
   const sendEmail = e => {
     e.preventDefault();
     if (status === 'sending' || status === 'success') return;
+
+    // Mark all touched and validate
+    setTouched({ from_name: true, from_email: true, message: true });
+    const errs = validate(fields);
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) return; // client-side block — don't even ping EmailJS
+
     setStatus('sending');
     emailjs
-      .sendForm(
+      .send(
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
         process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
-        formRef.current,
+        {
+          name:    fields.from_name.trim(),   // matches {{name}} in template
+          email:   fields.from_email.trim(),  // matches {{email}} in template (Reply To)
+          message: fields.message.trim(),     // matches {{message}} in template
+          title:   `New message from ${fields.from_name.trim()}`, // matches {{title}} in Subject
+          time:    new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }),
+        },
         process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
       )
-      .then(
-        () => {
-          setStatus('success');
-          setFields({ from_name: '', from_email: '', message: '' });
-        },
-        () => {
-          setStatus('error');
-          setTimeout(() => setStatus('idle'), 3000);
-        }
-      );
+      .then(() => {
+        setStatus('success');
+        setFields({ from_name: '', from_email: '', message: '' });
+        setFieldErrors({});
+        setTouched({});
+      })
+      .catch(() => {
+        // Only genuine network / EmailJS failures reach here
+        setStatus('network_err');
+      });
   };
 
-  const btnColor = STATUS_MAP[status].color;
+  const handleRetry = () => setStatus('idle');
+
+  const btnStatus = status === 'network_err' ? 'idle' : status;
+  const btnColor = STATUS_MAP[btnStatus].color;
 
   return (
     <>
@@ -365,7 +503,7 @@ const Contact = () => {
         style={{
           position: 'relative',
           background: '#000',
-          height: '100vh',
+          minHeight: '100vh',
           padding: 'clamp(30px,5vw,60px) clamp(16px,5vw,40px)',
           overflow: 'hidden',
           fontFamily: "'DM Mono', monospace",
@@ -406,67 +544,37 @@ const Contact = () => {
         <div style={{ position: 'absolute', top: '10%', left: '5%', width: '35vw', height: '35vw', maxWidth: 420, maxHeight: 420, background: 'radial-gradient(circle, rgba(41,123,201,0.07) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
         <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: '28vw', height: '28vw', maxWidth: 340, maxHeight: 340, background: 'radial-gradient(circle, rgba(199,6,28,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
-        {/* ── MAIN RESPONSIVE GRID LAYOUT ── */}
+        {/* ── MAIN LAYOUT ── */}
         <div style={{
-          position: 'relative',
-          zIndex: 10,
-          maxWidth: '1100px',
-          width: '100%',
-          margin: '0 auto',
+          position: 'relative', zIndex: 10,
+          maxWidth: '1100px', width: '100%', margin: '0 auto',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           gap: 'clamp(32px, 6vw, 80px)',
           alignItems: 'center',
         }}>
 
-          {/* ── LEFT COLUMN: HEADINGS, DESCRIPTION & SOCIALS ── */}
+          {/* ── LEFT ── */}
           <motion.div style={{ y: titleY }}>
-
             <h2 style={{ margin: '0 0 1.5rem 0', lineHeight: 0.9, letterSpacing: '-0.03em' }}>
-              <div style={{
-                fontFamily: "'Syne', sans-serif",
-                fontWeight: 800,
-                fontSize: 'clamp(46px, 8vw, 80px)',
-                color: '#fff',
-              }}>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 'clamp(46px, 8vw, 80px)', color: '#fff' }}>
                 LET'S
               </div>
               <div style={{
-                fontFamily: "'Syne', sans-serif",
-                fontWeight: 800,
+                fontFamily: "'Syne', sans-serif", fontWeight: 800,
                 fontSize: 'clamp(46px, 8vw, 80px)',
-                WebkitTextStroke: '2px var(--c-blue)',
-                color: 'transparent',
+                WebkitTextStroke: '2px var(--c-blue)', color: 'transparent',
                 filter: 'drop-shadow(0 0 30px rgba(41,123,201,0.35))',
               }}>
                 <GlitchText text="TALK" triggered={glitchTriggered} />
               </div>
             </h2>
 
-
-            {/* <motion.div
-              initial={{ scaleX: 0 }}
-              animate={inView ? { scaleX: 1 } : {}}
-              transition={{ duration: 0.9, ease: [0.32, 0.72, 0, 1], delay: 0.4 }}
-              style={{
-                height: '1.5px', width: '180px', marginBottom: '2rem',
-                // background: 'linear-gradient(90deg, var(--c-blue), var(--c-red), transparent)',
-                background: 'linear-gradient(90deg, #fff, transparent)',
-                transformOrigin: 'left',
-              }}
-            /> */}
-
-            <p style={{
-              fontSize: '13px', color: 'rgba(255,255,255,0.4)',
-              lineHeight: 1.8, marginBottom: '2.5rem',
-              fontFamily: "'DM Mono', monospace",
-            }}>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.8, marginBottom: '2.5rem', fontFamily: "'DM Mono', monospace" }}>
               <span style={{ color: 'var(--c-blue)' }}>// </span>
-              Open to collaborations, freelance,<br />
-              and full-time opportunities.
+              Open to collaborations, freelance,<br />and full-time opportunities.
             </p>
 
-            {/* Social Links Stacked */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {SOCIALS.map((s, i) => (
                 <motion.a
@@ -484,22 +592,19 @@ const Contact = () => {
                     border: '1px solid rgba(255,255,255,0.07)',
                     background: 'rgba(255,255,255,0.02)',
                     textDecoration: 'none', color: 'rgba(255,255,255,0.6)',
-                    transition: 'all 0.22s ease',
-                    backdropFilter: 'blur(4px)',
+                    transition: 'all 0.22s ease', backdropFilter: 'blur(4px)',
                   }}
                   onMouseEnter={e => {
-                    const c = s.hovcol
-
-                    e.currentTarget.style.borderColor = c
-                    e.currentTarget.style.background = `${c}15`
-                    e.currentTarget.style.color = '#fff'
-                    e.currentTarget.style.boxShadow = `0 0 25px ${c}22`
+                    e.currentTarget.style.borderColor = s.hovcol;
+                    e.currentTarget.style.background = `${s.hovcol}15`;
+                    e.currentTarget.style.color = '#fff';
+                    e.currentTarget.style.boxShadow = `0 0 25px ${s.hovcol}22`;
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,.07)'
-                    e.currentTarget.style.background = 'rgba(255,255,255,.02)'
-                    e.currentTarget.style.color = 'rgba(255,255,255,.6)'
-                    e.currentTarget.style.boxShadow = 'none'
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,.07)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,.02)';
+                    e.currentTarget.style.color = 'rgba(255,255,255,.6)';
+                    e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
                   <span style={{ color: 'var(--c-blue)', flexShrink: 0 }}>{s.icon}</span>
@@ -507,9 +612,7 @@ const Contact = () => {
                     <span style={{ display: 'block', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', marginBottom: '2px' }}>
                       {s.name.toUpperCase()}
                     </span>
-                    <span style={{ fontSize: '12px', fontFamily: "'DM Mono', monospace" }}>
-                      /{s.handle}
-                    </span>
+                    <span style={{ fontSize: '12px', fontFamily: "'DM Mono', monospace" }}>/{s.handle}</span>
                   </span>
                   <span className="social-arrow" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>→</span>
                 </motion.a>
@@ -517,22 +620,20 @@ const Contact = () => {
             </div>
           </motion.div>
 
-          {/* ── RIGHT COLUMN: INTERACTIVE INTERFACE FORM ── */}
+          {/* ── RIGHT: FORM ── */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1], delay: 0.3 }}
           >
-            <div style={{
-              position: 'relative',
-              border: '1px solid rgba(255,255,255,0.09)',
-              borderRadius: '12px',
-              background: 'rgba(255,255,255,0.02)',
-              backdropFilter: 'blur(12px)',
-              padding: 'clamp(20px,4vw,32px)',
-              overflow: 'hidden',
-            }}
-            className='lg:min-w-[500px] md:min-w-[400px]'
+            <div
+              className="lg:min-w-[500px] md:min-w-[400px]"
+              style={{
+                position: 'relative',
+                border: '1px solid rgba(255,255,255,0.09)', borderRadius: '12px',
+                background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(12px)',
+                padding: 'clamp(20px,4vw,32px)', overflow: 'hidden',
+              }}
             >
               {/* Inner scanline */}
               <div style={{
@@ -589,14 +690,15 @@ const Contact = () => {
                         border: '1px solid rgba(34,197,94,0.4)',
                         background: 'rgba(34,197,94,0.08)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        margin: '0 auto 1.25rem',
-                        fontSize: 22, color: 'var(--c-green)',
+                        margin: '0 auto 1.25rem', fontSize: 22, color: 'var(--c-green)',
                       }}
-                    >
-                      ✓
-                    </motion.div>
-                    <p style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 20, color: '#fff', margin: '0 0 8px' }}>Transmission complete.</p>
-                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0 }}>I'll get back to you within 24 hours.</p>
+                    >✓</motion.div>
+                    <p style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 20, color: '#fff', margin: '0 0 8px' }}>
+                      Transmission complete.
+                    </p>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+                      I'll get back to you within 24 hours.
+                    </p>
                   </motion.div>
                 ) : (
                   <motion.form
@@ -612,7 +714,9 @@ const Contact = () => {
                       id="from_name"
                       value={fields.from_name}
                       onChange={e => setField('from_name', e.target.value)}
-                      placeholder="Place Holder"
+                      onBlur={() => handleBlur('from_name')}
+                      placeholder="John Doe"
+                      error={fieldErrors.from_name}
                     />
                     <TerminalField
                       label="Email Address"
@@ -620,18 +724,23 @@ const Contact = () => {
                       type="email"
                       value={fields.from_email}
                       onChange={e => setField('from_email', e.target.value)}
+                      onBlur={() => handleBlur('from_email')}
                       placeholder="example@gmail.com"
+                      error={fieldErrors.from_email}
                     />
                     <TerminalField
                       label="Message"
                       id="message"
                       value={fields.message}
                       onChange={e => setField('message', e.target.value)}
+                      onBlur={() => handleBlur('message')}
                       placeholder="Hey, I'd love to collaborate on..."
                       rows={4}
                       maxLength={500}
+                      error={fieldErrors.message}
                     />
 
+                    {/* Submit button */}
                     <motion.button
                       type="submit"
                       disabled={status === 'sending'}
@@ -668,8 +777,14 @@ const Contact = () => {
                           style={{ display: 'inline-block', width: 12, height: 12, border: `1.5px solid ${btnColor}44`, borderTop: `1.5px solid ${btnColor}`, borderRadius: '50%' }}
                         />
                       )}
-                      {STATUS_MAP[status].label}
+                      {STATUS_MAP[btnStatus].label}
                     </motion.button>
+
+                    {/* Network error toast — only shown for real send failures */}
+                    <NetworkErrorToast
+                      visible={status === 'network_err'}
+                      onRetry={handleRetry}
+                    />
                   </motion.form>
                 )}
               </AnimatePresence>
