@@ -8,7 +8,7 @@ const CATEGORIES = ["All", "ML & AI", "DevOps & MLOps", "Backend", "Frontend", "
 const skills = [
   // ML & AI
   { name: "Python",       icon: "python",          cat: "ML & AI",       color: "#3B82F6" },
-  { name: "TensorFlow",   icon: "tensorflow",      cat: "ML & AI",       color: "#FF6F00" },
+  { name: "PyTorch",      icon: "pytorch",         cat: "ML & AI",       color: "#EE4C2C" },
   { name: "OpenCV",       icon: "opencv",          cat: "ML & AI",       color: "#5C3EE8" },
   { name: "NumPy",        icon: "numpy",           cat: "ML & AI",       color: "#4DABF7" },
   { name: "Pandas",       icon: "pandas",          cat: "ML & AI",       color: "#150458" },

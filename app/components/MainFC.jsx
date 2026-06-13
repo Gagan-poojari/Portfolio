@@ -13,12 +13,12 @@ const mern_icons = [
   { id: 5, src: '/icons/mern-icons/mongodb-icon.webp', alt: 'MongoDB' },
 ]
 
-const dsml_icons = [
-  { id: 1, src: '/icons/dsml-icons/python-icon.png', alt: 'Python' },
-  { id: 2, src: '/icons/dsml-icons/numpy-icon.png', alt: 'NumPy' },
-  { id: 3, src: '/icons/dsml-icons/pandas-icon.png', alt: 'Pandas' },
-  { id: 4, src: '/icons/dsml-icons/scikit-learn-icon.png', alt: 'Scikit-learn' },
-  { id: 5, src: '/icons/dsml-icons/matplotlib-icon.png', alt: 'Matplotlib' },
+const aiml_icons = [
+  { id: 1, src: '/icons/aiml-icons/pytorch-icon.png', alt: 'PyTorch' },
+  { id: 2, src: '/icons/aiml-icons/opencv-icon.webp', alt: 'OpenCV' },
+  { id: 3, src: '/icons/aiml-icons/numpy-icon.png', alt: 'NumPy' },
+  { id: 4, src: '/icons/aiml-icons/pandas-icon.png', alt: 'Pandas' },
+  { id: 5, src: '/icons/aiml-icons/scikit-learn-icon.png', alt: 'Scikit-learn' },
 ]
 
 const fadeUp = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.32, 0.72, 0, 1] } } }
@@ -54,13 +54,9 @@ const RedIcon = ({ src, alt }) => (
   </motion.div>
 )
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Glitch Decode - all randomness lives in useEffect, never in render
-// ─────────────────────────────────────────────────────────────────────────────
 const GLITCH_CHARS = '!<>-_\\/[]{}-=+*^?#@%$&ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
 function GlitchDecodeHeading({ text, triggered }) {
-  // Start with the actual text visible (no blank flash on load)
   const [letters, setLetters] = useState(() =>
     text.split('').map((ch) => ({
       char: ch,
@@ -77,7 +73,6 @@ function GlitchDecodeHeading({ text, triggered }) {
   const rafRef = useRef(null)
   const stateRef = useRef({ locked: [], iter: [] })
 
-  // When text changes (heading switch), re-init to new text locked
   useEffect(() => {
     setLetters(
       text.split('').map((ch) => ({
@@ -88,7 +83,6 @@ function GlitchDecodeHeading({ text, triggered }) {
     setDone(true)
   }, [text])
 
-  // When triggered fires, run the decode animation
   useEffect(() => {
     if (!triggered) return
 
@@ -184,17 +178,12 @@ function GlitchDecodeHeading({ text, triggered }) {
             key={i}
             className="inline-block transformers"
             style={{
-              // fontSize: "clamp(30px, 5vw, 50px)",
               WebkitTextStroke: `1px #fff`,
               color: "transparent",
-              transition: "all 0.4s ease",
               lineHeight: 0.92,
-              // letterSpacing: "-0.03em",
               margin: 0,
               fontWeight: 800,
-              // fontFamily: "'Syne', sans-serif",
               transform: l.locked ? 'none' : `translate(${l.glitchX}px,${l.glitchY}px)`,
-              // color: l.locked ? '#f0f0f0' : `hsl(${l.hue},80%,70%)`,
               opacity: l.locked ? 1 : 0.85,
               textShadow: l.locked
                 ? 'none'
@@ -216,7 +205,6 @@ function GlitchDecodeHeading({ text, triggered }) {
             transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
             className="mt-2 h-[1.5px] w-2/3"
             style={{
-              // background: 'linear-gradient(90deg,transparent,#297bc9 30%,#c7061c 70%,transparent)',
               background: 'linear-gradient(90deg,transparent,#fff 30%,#fff 70%,transparent)',
               transformOrigin: 'center',
             }}
@@ -227,9 +215,7 @@ function GlitchDecodeHeading({ text, triggered }) {
   )
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 const MainFC = () => {
-  // "WELCOME..." is shown immediately; after 2.5s it switches + triggers decode
   const [heading, setHeading] = useState('WELCOME TO MY PORTFOLIO...')
   const [triggered, setTriggered] = useState(false)
   const [hasSwitched, setHasSwitched] = useState(false)
@@ -257,14 +243,13 @@ const MainFC = () => {
 
       <div className="min-h-screen flex flex-col justify-center items-center gap-16 lg:gap-20 p-8 pt-24 overflow-hidden">
 
-        {/* ── three-column hero ── */}
         <Tilt tiltMaxAngleX={6} tiltMaxAngleY={6} glareEnable={false} className="w-full max-w-5xl">
           <div className="flex flex-col lg:flex-row items-center justify-center gap-10 relative">
 
             <div className="pointer-events-none absolute left-0 top-0 w-1/2 h-full bg-gradient-to-r from-[#297bc9]/8 to-transparent" />
             <div className="pointer-events-none absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-[#c7061c]/8 to-transparent" />
 
-            {/* LEFT */}
+            {/* LEFT — MERN */}
             <motion.div className="w-full lg:w-1/3 flex flex-col items-end gap-5" initial="hidden" animate="show" variants={fadeUp}>
               <motion.div className="text-right transformers" variants={slideLeft} initial="hidden" animate="show">
                 <p className="text-[#297bc9] text-3xl lg:text-4xl font-bold tracking-wide leading-tight">MERN STACK</p>
@@ -291,13 +276,13 @@ const MainFC = () => {
               </div>
             </motion.div>
 
-            {/* RIGHT */}
+            {/* RIGHT — AI/ML */}
             <motion.div className="w-full lg:w-1/3 flex flex-col items-start gap-5" initial="hidden" animate="show" variants={fadeUp}>
               <motion.div className="flex flex-wrap justify-start" variants={staggerIcons} initial="hidden" animate="show">
-                {dsml_icons.map((item) => <RedIcon key={item.id} src={item.src} alt={item.alt} />)}
+                {aiml_icons.map((item) => <RedIcon key={item.id} src={item.src} alt={item.alt} />)}
               </motion.div>
               <motion.div className="text-left transformers" variants={slideRight} initial="hidden" animate="show">
-                <p className="text-[#c7061c] text-3xl lg:text-4xl font-bold tracking-wide leading-tight">DATA SCIENCE &<br />MACHINE LEARNING</p>
+                <p className="text-[#c7061c] text-3xl lg:text-4xl font-bold tracking-wide leading-tight">AI / Machine Learning</p>
                 <p className="text-[#c7061c]/65 text-xl lg:text-2xl font-semibold tracking-[0.12em] mt-1">ENGINEER</p>
               </motion.div>
             </motion.div>
@@ -305,7 +290,6 @@ const MainFC = () => {
           </div>
         </Tilt>
 
-        {/* ── heading ── */}
         <GlitchDecodeHeading text={heading} triggered={triggered} />
 
       </div>
