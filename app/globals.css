@@ -2,7 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
+/*
+  Google Fonts (Bebas Neue, DM Sans, JetBrains Mono) are loaded via
+  next/font/google in layout.js — self-hosted, preloaded, and iOS-safe.
+  Do NOT add an @import here; it breaks loading on iOS Chrome/Safari.
+*/
 
 @font-face {
   font-family: 'Transformers Movie';
@@ -22,9 +26,14 @@
 
 /* ── Tokens ──────────────────────────────────────────── */
 :root {
-  --font-display:   'Bebas Neue', 'Transformers Movie', sans-serif;
-  --font-body:      'DM Sans', 'ClashDisplay', sans-serif;
-  --font-mono:      'JetBrains Mono', monospace;
+  /*
+    --font-bebas, --font-dm-sans, --font-jetbrains are injected by
+    next/font/google (layout.js) onto the <body> element at runtime.
+    We reference them here so all components pick them up automatically.
+  */
+  --font-display:   var(--font-bebas), 'Transformers Movie', sans-serif;
+  --font-body:      var(--font-dm-sans), 'ClashDisplay', sans-serif;
+  --font-mono:      var(--font-jetbrains), monospace;
   --font-clash:     'ClashDisplay', sans-serif;
   --font-tf:        'Transformers Movie', sans-serif;
 
