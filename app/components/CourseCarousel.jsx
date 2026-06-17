@@ -197,7 +197,7 @@ function CredCard({ course, index, onClick, isDragging }) {
         }}
         transition={{ duration: 0.25 }}
         style={{
-          width: 'clamp(280px, 35vw, 340px)',
+          width: 'clamp(250px, 85vw, 340px)',
           background: '#080808',
           border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: '12px',
@@ -572,28 +572,54 @@ export default function CourseCarousel() {
   /* auto-scroll */
   const autoScrollRef = useRef(null)
   const scrollPosRef = useRef(0)
+  const oneSetRef = useRef(0)
   const SPEED = 0.6
 
   useEffect(() => {
     const track = trackRef.current
     if (!track) return
 
-    const oneSet = track.scrollWidth / 3
-    track.scrollLeft = oneSet
-    scrollPosRef.current = oneSet
+    const updateWidths = () => {
+      const oneSet = track.scrollWidth / 3
+      oneSetRef.current = oneSet
+      if (track.scrollLeft === 0 && oneSet > 0) {
+        track.scrollLeft = oneSet
+        scrollPosRef.current = oneSet
+      }
+    }
+
+    updateWidths()
+
+    // Recalculate after images/fonts load
+    const timeoutId = setTimeout(updateWidths, 800)
+
+    window.addEventListener('resize', updateWidths)
+    const observer = new ResizeObserver(updateWidths)
+    observer.observe(track)
 
     const tick = () => {
-      if (!isPaused && !dragState.current.dragging) {
-        scrollPosRef.current += SPEED
-        if (scrollPosRef.current >= oneSet * 2) scrollPosRef.current = oneSet
-        track.scrollLeft = scrollPosRef.current
-      } else {
-        scrollPosRef.current = track.scrollLeft
+      const oneSet = oneSetRef.current
+      if (oneSet > 0) {
+        if (!isPaused && !dragState.current.dragging) {
+          scrollPosRef.current += SPEED
+          if (scrollPosRef.current >= oneSet * 2) {
+            scrollPosRef.current = oneSet
+          }
+          track.scrollLeft = scrollPosRef.current
+        } else {
+          scrollPosRef.current = track.scrollLeft
+        }
       }
       autoScrollRef.current = requestAnimationFrame(tick)
     }
     autoScrollRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(autoScrollRef.current)
+
+    return () => {
+      cancelAnimationFrame(autoScrollRef.current)
+      window.removeEventListener('resize', updateWidths)
+      observer.disconnect()
+      clearTimeout(timeoutId)
+    }
   }, [isPaused])
 
   /* intersection */
@@ -721,8 +747,8 @@ export default function CourseCarousel() {
         {/* ── CAROUSEL TRACK ── */}
         <div style={{ position: 'relative', zIndex: 10 }}>
           {/* edge fade masks */}
-          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 'clamp(32px,6vw,80px)', background: 'linear-gradient(90deg,#000,transparent)', zIndex: 3, pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 'clamp(32px,6vw,80px)', background: 'linear-gradient(270deg,#000,transparent)', zIndex: 3, pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 'clamp(16px,4vw,80px)', background: 'linear-gradient(90deg,#000,transparent)', zIndex: 3, pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 'clamp(16px,4vw,80px)', background: 'linear-gradient(270deg,#000,transparent)', zIndex: 3, pointerEvents: 'none' }} />
 
           <div
             ref={trackRef}
@@ -736,7 +762,7 @@ export default function CourseCarousel() {
             style={{
               display: 'flex', gap: '20px',
               overflowX: 'scroll',
-              padding: 'clamp(16px,3vw,32px) clamp(32px,6vw,80px)',
+              padding: 'clamp(16px,3vw,32px) clamp(16px,5vw,80px)',
               cursor: 'grab',
               perspective: '1000px',
             }}

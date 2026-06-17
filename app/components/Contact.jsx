@@ -543,7 +543,7 @@ const Contact = () => {
           position: 'relative', zIndex: 10,
           maxWidth: '1100px', width: '100%', margin: '0 auto',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: 'clamp(32px, 6vw, 80px)',
           alignItems: 'center',
         }}>

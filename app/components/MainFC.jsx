@@ -250,12 +250,12 @@ const MainFC = () => {
             <div className="pointer-events-none absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-[#c7061c]/8 to-transparent" />
 
             {/* LEFT — MERN */}
-            <motion.div className="w-full lg:w-1/3 flex flex-col items-end gap-5" initial="hidden" animate="show" variants={fadeUp}>
-              <motion.div className="text-right transformers" variants={slideLeft} initial="hidden" animate="show">
+            <motion.div className="w-full lg:w-1/3 flex flex-col items-center lg:items-end gap-5" initial="hidden" animate="show" variants={fadeUp}>
+              <motion.div className="text-center lg:text-right transformers" variants={slideLeft} initial="hidden" animate="show">
                 <p className="text-[#297bc9] text-3xl lg:text-4xl font-bold tracking-wide leading-tight">MERN STACK</p>
                 <p className="text-[#297bc9]/65 text-xl lg:text-2xl font-semibold tracking-[0.12em] mt-1">DEVELOPER</p>
               </motion.div>
-              <motion.div className="flex flex-wrap justify-end" variants={staggerIcons} initial="hidden" animate="show">
+              <motion.div className="flex flex-wrap justify-center lg:justify-end" variants={staggerIcons} initial="hidden" animate="show">
                 {mern_icons.map((item) => <BlueIcon key={item.id} src={item.src} alt={item.alt} />)}
               </motion.div>
             </motion.div>
@@ -277,11 +277,11 @@ const MainFC = () => {
             </motion.div>
 
             {/* RIGHT — AI/ML */}
-            <motion.div className="w-full lg:w-1/3 flex flex-col items-start gap-5" initial="hidden" animate="show" variants={fadeUp}>
-              <motion.div className="flex flex-wrap justify-start" variants={staggerIcons} initial="hidden" animate="show">
+            <motion.div className="w-full lg:w-1/3 flex flex-col items-center lg:items-start gap-5" initial="hidden" animate="show" variants={fadeUp}>
+              <motion.div className="flex flex-wrap justify-center lg:justify-start" variants={staggerIcons} initial="hidden" animate="show">
                 {aiml_icons.map((item) => <RedIcon key={item.id} src={item.src} alt={item.alt} />)}
               </motion.div>
-              <motion.div className="text-left transformers" variants={slideRight} initial="hidden" animate="show">
+              <motion.div className="text-center lg:text-left transformers" variants={slideRight} initial="hidden" animate="show">
                 <p className="text-[#c7061c] text-3xl lg:text-4xl font-bold tracking-wide leading-tight">AI / Machine Learning</p>
                 <p className="text-[#c7061c]/65 text-xl lg:text-2xl font-semibold tracking-[0.12em] mt-1">ENGINEER</p>
               </motion.div>

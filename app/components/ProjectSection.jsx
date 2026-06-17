@@ -386,28 +386,22 @@ function ProjectRow({ project, index, isExpanded, onToggle }) {
             Project {num} &nbsp;·&nbsp; {sub}
           </p>
 
-          {/* <h3
+          <h3
             className="font-black leading-[0.92] tracking-tight mb-4 break-words min-w-0"
             style={{
               fontFamily: "'Syne', sans-serif",
               fontSize: 'clamp(28px, 3.5vw, 52px)',
-              color: '#fff',
             }}
           >
-            {title}
-          </h3> */}
-          <span
-  className="bg-clip-text text-transparent"
-  style={{
-    backgroundImage: `linear-gradient(
-      90deg,
-      #fff,
-      ${hex2rgba(accent, 0.9)}
-    )`,
-  }}
->
-  {title}
-</span>
+            <span
+              className="bg-clip-text text-transparent"
+              style={{
+                backgroundImage: `linear-gradient(90deg, #fff, ${hex2rgba(accent, 0.9)})`,
+              }}
+            >
+              {title}
+            </span>
+          </h3>
 
           <p className="text-[13px] text-white/50 leading-relaxed mb-6 max-w-md">{tagline}</p>
 

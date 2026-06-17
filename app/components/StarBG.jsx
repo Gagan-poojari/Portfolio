@@ -11,8 +11,6 @@ function cn(...classes) {
 function StarCanvas() {
   const canvasRef = useRef(null);
   const frameRef  = useRef(null);
-  const starsRef  = useRef([]);
-  const shootersRef = useRef([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -24,20 +22,24 @@ function StarCanvas() {
     const vsSource = `
       attribute vec2 a_position;
       attribute float a_size;
-      attribute float a_brightness;
+      attribute float a_baseBri;
+      attribute float a_twinkleSpeed;
+      attribute float a_twinklePhase;
+      attribute float a_twinkleAmp;
       uniform vec2 u_resolution;
+      uniform float u_time;
       varying float v_brightness;
       void main() {
         vec2 clip = (a_position / u_resolution) * 2.0 - 1.0;
-        gl_Position = vec4(clip * vec2(1, -1), 0, 1);
+        gl_Position = vec4(clip * vec2(1, -1), 0.0, 1.0);
         gl_PointSize = a_size;
-        v_brightness = a_brightness;
+        float twinkle = sin(u_time * a_twinkleSpeed + a_twinklePhase) * a_twinkleAmp;
+        v_brightness = max(0.0, min(1.0, a_baseBri + twinkle));
       }
     `;
     const fsSource = `
       precision mediump float;
       varying float v_brightness;
-      uniform float u_time;
       void main() {
         vec2 uv = gl_PointCoord - 0.5;
         float dist = length(uv);
@@ -51,57 +53,63 @@ function StarCanvas() {
       const s = gl.createShader(type);
       gl.shaderSource(s, src); gl.compileShader(s); return s;
     }
+    const vsShader = compile(gl.VERTEX_SHADER, vsSource);
+    const fsShader = compile(gl.FRAGMENT_SHADER, fsSource);
     const prog = gl.createProgram();
-    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsSource));
-    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsSource));
+    gl.attachShader(prog, vsShader);
+    gl.attachShader(prog, fsShader);
     gl.linkProgram(prog); gl.useProgram(prog);
 
-    const aPos  = gl.getAttribLocation(prog, 'a_position');
+    const aPos = gl.getAttribLocation(prog, 'a_position');
     const aSize = gl.getAttribLocation(prog, 'a_size');
-    const aBri  = gl.getAttribLocation(prog, 'a_brightness');
-    const uRes  = gl.getUniformLocation(prog, 'u_resolution');
+    const aBaseBri = gl.getAttribLocation(prog, 'a_baseBri');
+    const aTwinkleSpeed = gl.getAttribLocation(prog, 'a_twinkleSpeed');
+    const aTwinklePhase = gl.getAttribLocation(prog, 'a_twinklePhase');
+    const aTwinkleAmp = gl.getAttribLocation(prog, 'a_twinkleAmp');
+    const uRes = gl.getUniformLocation(prog, 'u_resolution');
     const uTime = gl.getUniformLocation(prog, 'u_time');
 
-    let W, H, stars;
+    let W, H;
+    let starBuffer = null;
+    let starCount = 0;
 
     function initStars() {
       W = canvas.width = canvas.offsetWidth;
       H = canvas.height = canvas.offsetHeight;
-      const count = Math.floor((W * H) / 900);
-      stars = Array.from({ length: count }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        size: Math.random() < 0.07 ? 2.8 + Math.random() * 1.4
+      starCount = Math.floor((W * H) / 900);
+      const data = new Float32Array(starCount * 7);
+
+      for (let i = 0; i < starCount; i++) {
+        const x = Math.random() * W;
+        const y = Math.random() * H;
+        const size = Math.random() < 0.07 ? 2.8 + Math.random() * 1.4
              : Math.random() < 0.25 ? 1.8 + Math.random() * 0.8
-             : 0.8 + Math.random() * 0.8,
-        baseBri: 0.35 + Math.random() * 0.65,
-        twinkleSpeed: 0.4 + Math.random() * 2.2,
-        twinklePhase: Math.random() * Math.PI * 2,
-        twinkleAmp: 0.08 + Math.random() * 0.28,
-      }));
-      starsRef.current = stars;
+             : 0.8 + Math.random() * 0.8;
+        const baseBri = 0.35 + Math.random() * 0.65;
+        const twinkleSpeed = 0.4 + Math.random() * 2.2;
+        const twinklePhase = Math.random() * Math.PI * 2;
+        const twinkleAmp = 0.08 + Math.random() * 0.28;
+
+        const idx = i * 7;
+        data[idx]     = x;
+        data[idx + 1] = y;
+        data[idx + 2] = size;
+        data[idx + 3] = baseBri;
+        data[idx + 4] = twinkleSpeed;
+        data[idx + 5] = twinklePhase;
+        data[idx + 6] = twinkleAmp;
+      }
+
+      if (starBuffer) {
+        gl.deleteBuffer(starBuffer);
+      }
+      starBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, starBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
     }
 
     initStars();
     window.addEventListener('resize', initStars);
-
-    // shooting star state
-    let shooters = [];
-    shootersRef.current = shooters;
-
-    function spawnShooter() {
-      shooters.push({
-        x: Math.random() * W * 1.3,
-        y: -20,
-        vx: -(3 + Math.random() * 4),
-        vy: 2.5 + Math.random() * 3,
-        life: 1,
-        decay: 0.012 + Math.random() * 0.01,
-        length: 80 + Math.random() * 120,
-      });
-    }
-
-    let lastShoot = 0;
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
@@ -112,51 +120,34 @@ function StarCanvas() {
       gl.viewport(0, 0, W, H);
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.uniform2f(uRes, W, H);
-      gl.uniform1f(uTime, t);
 
-      // build star buffers
-      const pos = new Float32Array(stars.length * 2);
-      const siz = new Float32Array(stars.length);
-      const bri = new Float32Array(stars.length);
-      for (let i = 0; i < stars.length; i++) {
-        const s = stars[i];
-        const twinkle = Math.sin(t * s.twinkleSpeed + s.twinklePhase) * s.twinkleAmp;
-        pos[i * 2]     = s.x;
-        pos[i * 2 + 1] = s.y;
-        siz[i] = s.size;
-        bri[i] = Math.max(0, Math.min(1, s.baseBri + twinkle));
-      }
+      if (starCount > 0 && starBuffer) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, starBuffer);
 
-      const posBuf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, pos, gl.DYNAMIC_DRAW);
-      gl.enableVertexAttribArray(aPos);
-      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+        const stride = 7 * 4; // 7 floats, 4 bytes each
 
-      const sizBuf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, sizBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, siz, gl.DYNAMIC_DRAW);
-      gl.enableVertexAttribArray(aSize);
-      gl.vertexAttribPointer(aSize, 1, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(aPos);
+        gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, stride, 0);
 
-      const briBuf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, briBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, bri, gl.DYNAMIC_DRAW);
-      gl.enableVertexAttribArray(aBri);
-      gl.vertexAttribPointer(aBri, 1, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(aSize);
+        gl.vertexAttribPointer(aSize, 1, gl.FLOAT, false, stride, 2 * 4);
 
-      gl.drawArrays(gl.POINTS, 0, stars.length);
+        gl.enableVertexAttribArray(aBaseBri);
+        gl.vertexAttribPointer(aBaseBri, 1, gl.FLOAT, false, stride, 3 * 4);
 
-      // cleanup
-      gl.deleteBuffer(posBuf);
-      gl.deleteBuffer(sizBuf);
-      gl.deleteBuffer(briBuf);
+        gl.enableVertexAttribArray(aTwinkleSpeed);
+        gl.vertexAttribPointer(aTwinkleSpeed, 1, gl.FLOAT, false, stride, 4 * 4);
 
-      // shooting stars (Canvas2D overlay handles these - see below)
-      if (t - lastShoot > 3.5 + Math.random() * 4) {
-        spawnShooter();
-        lastShoot = t;
+        gl.enableVertexAttribArray(aTwinklePhase);
+        gl.vertexAttribPointer(aTwinklePhase, 1, gl.FLOAT, false, stride, 5 * 4);
+
+        gl.enableVertexAttribArray(aTwinkleAmp);
+        gl.vertexAttribPointer(aTwinkleAmp, 1, gl.FLOAT, false, stride, 6 * 4);
+
+        gl.uniform2f(uRes, W, H);
+        gl.uniform1f(uTime, t);
+
+        gl.drawArrays(gl.POINTS, 0, starCount);
       }
 
       frameRef.current = requestAnimationFrame(render);
@@ -167,6 +158,10 @@ function StarCanvas() {
     return () => {
       cancelAnimationFrame(frameRef.current);
       window.removeEventListener('resize', initStars);
+      if (starBuffer) gl.deleteBuffer(starBuffer);
+      gl.deleteProgram(prog);
+      gl.deleteShader(vsShader);
+      gl.deleteShader(fsShader);
     };
   }, []);
 
