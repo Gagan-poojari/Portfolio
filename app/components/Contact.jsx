@@ -1,7 +1,6 @@
 'use client';
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import emailjs from '@emailjs/browser';
 
 /* ─────────────────────────────────────────────
    CONSTANTS
@@ -47,7 +46,6 @@ function validate(fields) {
   else if (!EMAIL_RE.test(fields.from_email.trim())) errors.from_email = 'Enter a valid email address.';
 
   if (!fields.message.trim()) errors.message = 'Message is required.';
-  else if (fields.message.trim().length < 10) errors.message = 'Message is too short (min 10 chars).';
 
   return errors;
 }
@@ -437,40 +435,36 @@ const Contact = () => {
 
   const progress = Object.values(fields).filter(v => v.trim()).length / 3;
 
-  const sendEmail = e => {
+  const sendEmail = async e => {
     e.preventDefault();
     if (status === 'sending' || status === 'success') return;
 
-    // Mark all touched and validate
     setTouched({ from_name: true, from_email: true, message: true });
     const errs = validate(fields);
     setFieldErrors(errs);
-    if (Object.keys(errs).length > 0) return; // client-side block — don't even ping EmailJS
+    if (Object.keys(errs).length > 0) return;
 
     setStatus('sending');
-    emailjs
-      .send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
-        {
-          name:    fields.from_name.trim(),   // matches {{name}} in template
-          email:   fields.from_email.trim(),  // matches {{email}} in template (Reply To)
-          message: fields.message.trim(),     // matches {{message}} in template
-          title:   `New message from ${fields.from_name.trim()}`, // matches {{title}} in Subject
-          time:    new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }),
-        },
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
-      )
-      .then(() => {
-        setStatus('success');
-        setFields({ from_name: '', from_email: '', message: '' });
-        setFieldErrors({});
-        setTouched({});
-      })
-      .catch(() => {
-        // Only genuine network / EmailJS failures reach here
-        setStatus('network_err');
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from_name: fields.from_name.trim(),
+          from_email: fields.from_email.trim(),
+          message: fields.message.trim(),
+        }),
       });
+
+      if (!response.ok) throw new Error('Send failed');
+
+      setStatus('success');
+      setFields({ from_name: '', from_email: '', message: '' });
+      setFieldErrors({});
+      setTouched({});
+    } catch {
+      setStatus('network_err');
+    }
   };
 
   const handleRetry = () => setStatus('idle');
