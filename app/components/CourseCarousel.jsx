@@ -703,10 +703,10 @@ export default function CourseCarousel() {
                 <span>// What made my skills</span>
               </motion.p>
               <h2 style={{ margin: 0, lineHeight: 0.92, letterSpacing: '-0.03em' }}>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 'clamp(40px,8vw,80px)', color: '#fff' }}>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 'clamp(28px,7vw,80px)', color: '#fff' }}>
                   COURSES &
                 </div>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 'clamp(40px,8vw,80px)', WebkitTextStroke: '2px rgba(59,130,246,0.8)', color: 'transparent', filter: 'drop-shadow(0 0 28px rgba(59,130,246,0.3))' }}>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 'clamp(28px,7vw,80px)', WebkitTextStroke: '2px rgba(59,130,246,0.8)', color: 'transparent', filter: 'drop-shadow(0 0 28px rgba(59,130,246,0.3))' }}>
                   <GlitchText text="CERTIFICATIONS" triggered={glitchTriggered} />
                 </div>
               </h2>

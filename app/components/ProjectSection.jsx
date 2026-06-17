@@ -630,7 +630,7 @@ export default function ProjectSection() {
           className="font-black leading-[0.88] tracking-tight"
           style={{
             fontFamily: "'Syne', sans-serif",
-            fontSize: 'clamp(56px, 10vw, 110px)',
+            fontSize: 'clamp(32px, 8vw, 110px)',
             color: '#fff',
           }}
         >

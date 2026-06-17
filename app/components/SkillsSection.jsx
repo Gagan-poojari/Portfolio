@@ -287,7 +287,7 @@ export default function SkillsSection() {
         <h2
           className="skills-title"
           style={{
-            fontSize: "clamp(52px, 10vw, 100px)",
+            fontSize: "clamp(32px, 8vw, 100px)",
             fontFamily: "'Syne', sans-serif",
             fontWeight: 800,
             color: "#fff",
