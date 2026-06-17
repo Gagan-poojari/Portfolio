@@ -1,5 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { GoogleAnalytics } from '@next/third-parties/google';
+import { Analytics } from '@vercel/analytics/react';
+import MicrosoftClarity from './components/MicrosoftClarity';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,13 +55,24 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+
+        {/* ── Vercel Analytics (page views, referrers, countries) ── */}
+        <Analytics />
+
+        {/* ── Microsoft Clarity (heatmaps + session recordings) ── */}
+        <MicrosoftClarity />
       </body>
+
+      {/* ── Google Analytics 4 (full traffic & event tracking) ── */}
+      {gaId && <GoogleAnalytics gaId={gaId} />}
     </html>
   );
 }
