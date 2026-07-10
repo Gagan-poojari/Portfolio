@@ -7,12 +7,15 @@ const CATEGORIES = ["All", "ML & AI", "DevOps & MLOps", "Backend", "Frontend", "
 
 const skills = [
   // ML & AI
-  { name: "Python",       icon: "python",          cat: "ML & AI",       color: "#3B82F6" },
-  { name: "PyTorch",      icon: "pytorch",         cat: "ML & AI",       color: "#EE4C2C" },
-  { name: "OpenCV",       icon: "opencv",          cat: "ML & AI",       color: "#5C3EE8" },
-  { name: "NumPy",        icon: "numpy",           cat: "ML & AI",       color: "#4DABF7" },
-  { name: "Pandas",       icon: "pandas",          cat: "ML & AI",       color: "#150458" },
-  { name: "Streamlit",    icon: "streamlit",       cat: "ML & AI",       color: "#FF4B4B" },
+  { name: "Python",           icon: "python",               cat: "ML & AI", color: "#3B82F6" },
+  { name: "PyTorch",          icon: "pytorch",              cat: "ML & AI", color: "#EE4C2C" },
+  { name: "OpenCV",           icon: "opencv",               cat: "ML & AI", color: "#5C3EE8" },
+  { name: "NumPy",            icon: "numpy",                cat: "ML & AI", color: "#4DABF7" },
+  { name: "Pandas",           icon: "pandas",               cat: "ML & AI", color: "#150458" },
+  { name: "Streamlit",        icon: "streamlit",            cat: "ML & AI", color: "#FF4B4B" },
+  { name: "FastAPI",          icon: "fastapi",              cat: "ML & AI", color: "#009688" },
+  { name: "TensorFlow",       icon: "tensorflow",           cat: "ML & AI", color: "#FF6F00" },
+  { name: "Azure AI Foundry", icon: "microsoftazure/white", cat: "ML & AI", color: "#0078D4" },
 
   // DevOps & MLOps
   { name: "Docker",       icon: "docker",          cat: "DevOps & MLOps", color: "#2496ED" },
@@ -24,6 +27,7 @@ const skills = [
   { name: "DVC",          icon: "dvc",             cat: "DevOps & MLOps", color: "#945DD6" },
   { name: "MLflow",       icon: "mlflow",          cat: "DevOps & MLOps", color: "#0194E2" },
   { name: "GitHub Actions",icon:"githubactions",   cat: "DevOps & MLOps", color: "#2088FF" },
+  { name: "YAML",         icon: "yaml",            cat: "DevOps & MLOps", color: "#CB171E" },
 
   // Backend
   { name: "Node.js",      icon: "nodedotjs/darkgreen",cat:"Backend",     color: "#339933" },
