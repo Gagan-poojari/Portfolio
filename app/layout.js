@@ -56,7 +56,7 @@ export const metadata = {
     title: "Gagan Poojari | Full-Stack Developer & MLOps Engineer",
     description:
       "Explore the portfolio of Gagan Poojari - crafting modern web applications, AI solutions, and scalable cloud-native systems.",
-    url: "https://gaganpoojari-portfolio.vercel.app/",
+    url: "https://gagan-poojari.me",
     siteName: "Gagan Poojari",
     images: [
       {
