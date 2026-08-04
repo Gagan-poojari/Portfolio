@@ -31,6 +31,7 @@ const jetbrainsMono = JetBrains_Mono({
   preload: true,
 });
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://gagan-poojari.me'),
   title: "Gagan Poojari",
   description:
     "Portfolio of Gagan Poojari - Full-Stack Web Developer, MLOps Engineer, and Open Source Contributor. Showcasing expertise in Next.js, React, Tailwind CSS, MongoDB, Docker, Kubernetes, and scalable AI-driven solutions.",

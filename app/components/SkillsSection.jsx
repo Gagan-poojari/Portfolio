@@ -325,7 +325,7 @@ export default function SkillsSection() {
             zIndex: -1,
           }}
         >
-          <img src="/steel-flower.webp" alt="" draggable={false} style={{ width: "100%" }} />
+          <img src="/steel-flower.jpeg" alt="" draggable={false} style={{ width: "100%" }} />
         </motion.div>
       </motion.div>
 

@@ -16,10 +16,12 @@ const staticCmdItems = [
     label: l.name,
     desc: `Jump to ${l.name}`,
     section: l.section,
+    href: l.href,
     type: 'nav',
     glyph: l.glyph,
     color: '#a3a3a3',
   })),
+  { label: 'Artworks Gallery', desc: 'Gagan’s Fine Pencil & Charcoal Sketches', href: '/artworks', type: 'page', glyph: '🎨', color: '#f59e0b' },
   { label: 'Resume',   desc: 'Open PDF in new tab',          href: '/resume.pdf',                                          type: 'action', glyph: '↗', color: '#F97316' },
   { label: 'GitHub',   desc: 'github.com/Gagan-poojari',     href: 'https://github.com/Gagan-poojari',                     type: 'social', glyph: '⌥', color: '#ffffff' },
   { label: 'LinkedIn', desc: 'Connect on LinkedIn',          href: 'https://www.linkedin.com/in/gagan-poojari-840744319/', type: 'social', glyph: '⌘', color: '#297bc9' },
@@ -150,7 +152,7 @@ export function CommandPalette({ open, onClose }) {
     }
   }, [open]);
 
-  // Page text search — debounced 180ms, fires after 2+ chars
+  // Page text search - debounced 180ms, fires after 2+ chars
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -205,7 +207,9 @@ export function CommandPalette({ open, onClose }) {
 
   const navigate = useCallback((item) => {
     onClose();
-    if (item.section) {
+    if (item.href && item.href.startsWith('/')) {
+      window.location.href = item.href;
+    } else if (item.section) {
       setTimeout(() => scrollToSection(item.section), 150);
     } else if (item.element) {
       setTimeout(() => {

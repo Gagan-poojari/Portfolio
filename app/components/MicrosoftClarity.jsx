@@ -2,7 +2,7 @@
 import Script from 'next/script';
 
 /**
- * Microsoft Clarity — heatmaps & session recordings
+ * Microsoft Clarity - heatmaps & session recordings
  * Replace CLARITY_PROJECT_ID with your real ID from https://clarity.microsoft.com
  */
 const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_ID || 'YOUR_CLARITY_PROJECT_ID';

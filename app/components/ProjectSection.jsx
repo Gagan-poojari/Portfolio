@@ -126,7 +126,7 @@ const PROJECTS = [
     num: '07', 
     title: 'LedgerFlow',
     sub: 'AP Automation Platform',
-    tagline: 'Enterprise-grade accounts payable—from hybrid OCR capture to multi-level approvals and payments.',
+    tagline: 'Enterprise-grade accounts payable-from hybrid OCR capture to multi-level approvals and payments.',
     liveHref: 'https://github.com/Gagan-poojari/LedgerFlow', 
     githubHref: 'https://github.com/Gagan-poojari/LedgerFlow',
     image: '/projects/ledgerflow.png',

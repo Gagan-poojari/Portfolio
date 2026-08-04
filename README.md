@@ -1,4 +1,4 @@
-# Gagan Poojari — Portfolio
+# Gagan Poojari - Portfolio
 
 Personal portfolio site for **Gagan Poojari**, a full-stack web developer, MLOps engineer, and open-source contributor. The site showcases projects, skills, certifications, and a contact form in a cinematic dark UI with scroll-driven animations and a WebGL star-field background.
 
@@ -18,14 +18,14 @@ Navigation includes a sticky navbar with section anchors, a command-palette-styl
 
 ## Featured projects
 
-- **RUVA** — Full-stack e-commerce for traditional Indian ethnic wear
-- **Pleeb** — AI video auto-censorship with Whisper and FFmpeg
-- **MLOps Pipeline** — End-to-end sentiment analysis with DVC, MLflow, and Prometheus
-- **Namma Benaka** — Loan management fintech platform
-- **HOLMAC Interiors** — Interior design marketing site
-- **FICE** — Institute enrollment website
-- **Sri Udupi Food Hub** — Restaurant site with flipbook digital menu
-- **Portfolio** — This site
+- **RUVA** - Full-stack e-commerce for traditional Indian ethnic wear
+- **Pleeb** - AI video auto-censorship with Whisper and FFmpeg
+- **MLOps Pipeline** - End-to-end sentiment analysis with DVC, MLflow, and Prometheus
+- **Namma Benaka** - Loan management fintech platform
+- **HOLMAC Interiors** - Interior design marketing site
+- **FICE** - Institute enrollment website
+- **Sri Udupi Food Hub** - Restaurant site with flipbook digital menu
+- **Portfolio** - This site
 
 ## Tech stack
 
@@ -76,7 +76,7 @@ Without these variables, the rest of the site works normally; only the contact f
 
 ```
 app/
-├── page.js              # Main page — assembles all sections
+├── page.js              # Main page - assembles all sections
 ├── layout.js            # Root layout, metadata, fonts
 ├── globals.css          # Global styles and CSS variables
 └── components/

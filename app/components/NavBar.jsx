@@ -11,7 +11,8 @@ const navLinks = [
   { name: 'Skills', section: 'skills', glyph: '⬡', num: '01' },
   { name: 'Courses', section: 'courses', glyph: '◎', num: '02' },
   { name: 'Projects', section: 'projects', glyph: '◈', num: '03' },
-  { name: 'Contact', section: 'contact', glyph: '◇', num: '04' },
+  { name: 'Artworks', href: '/artworks', glyph: '🎨', num: '04' },
+  { name: 'Contact', section: 'contact', glyph: '◇', num: '05' },
 ];
 
 const socials = [
@@ -186,7 +187,7 @@ function scrollToSection(sectionId) {
 
 // ─── MAGNETIC NAV LINK ────────────────────────────────────────────────────────
 
-function NavLink({ section, name, glyph, isActive }) {
+function NavLink({ section, href, name, glyph, isActive }) {
   const ref = useRef(null);
   const x = useMotionValue(0), y = useMotionValue(0);
   const sx = useSpring(x, { stiffness: 400, damping: 25 });
@@ -203,28 +204,24 @@ function NavLink({ section, name, glyph, isActive }) {
   const onLeave = useCallback(() => { x.set(0); y.set(0); setHovered(false); }, [x, y]);
 
   const handleClick = useCallback((e) => {
+    if (href) return;
     e.preventDefault();
     scrollToSection(section);
-  }, [section]);
+  }, [section, href]);
+
+  const LinkOrBtn = href ? Link : 'button';
+  const extraProps = href ? { href } : { onClick: handleClick };
 
   return (
     <motion.div ref={ref} style={{ x: sx, y: sy }} onMouseMove={onMove} onMouseEnter={() => setHovered(true)} onMouseLeave={onLeave}>
-      <button
-        onClick={handleClick}
+      <LinkOrBtn
+        {...extraProps}
         className="relative flex items-center gap-1.5 text-xs tracking-widest uppercase transition-colors duration-200 bg-transparent border-none outline-none cursor-none"
         style={{
           fontFamily: "'Share Tech Mono',monospace",
           color: isActive ? '#fff' : hovered ? '#fff' : 'rgba(255,255,255,0.4)',
         }}
       >
-        {/* <motion.span
-          animate={{ opacity: isActive || hovered ? 0.45 : 0, width: isActive || hovered ? 'auto' : 0 }}
-          transition={{ duration: 0.2 }}
-          style={{ fontSize: 9, overflow: 'hidden', whiteSpace: 'nowrap' }}
-        >
-          {glyph}
-        </motion.span> */}
-
         <span className="relative">
           {name}
           <motion.span
@@ -242,7 +239,7 @@ function NavLink({ section, name, glyph, isActive }) {
         {isActive && (
           <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff', opacity: 0.7, flexShrink: 0 }} />
         )}
-      </button>
+      </LinkOrBtn>
     </motion.div>
   );
 }
@@ -610,7 +607,7 @@ const NavBar = () => {
               </motion.div>
 
               <p style={{ marginTop: 12, textAlign: 'center', fontSize: 9, fontFamily: "'Share Tech Mono',monospace", color: 'rgba(255,255,255,0.15)', letterSpacing: '0.15em' }}>
-                ⌘K — command palette
+                ⌘K - command palette
               </p>
             </div>
           </motion.div>

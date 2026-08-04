@@ -57,7 +57,7 @@ const STATUS_MAP = {
   idle:        { label: '> Send Message',          color: 'var(--c-blue)' },
   sending:     { label: '> Transmitting...',        color: 'var(--c-yellow)' },
   success:     { label: '> Message Sent ✓',         color: 'var(--c-green)' },
-  network_err: { label: '> Network Error — Retry',  color: 'var(--c-red)' },
+  network_err: { label: '> Network Error - Retry',  color: 'var(--c-red)' },
 };
 
 /* ─────────────────────────────────────────────
@@ -774,7 +774,7 @@ const Contact = () => {
                       {STATUS_MAP[btnStatus].label}
                     </motion.button>
 
-                    {/* Network error toast — only shown for real send failures */}
+                    {/* Network error toast - only shown for real send failures */}
                     <NetworkErrorToast
                       visible={status === 'network_err'}
                       onRetry={handleRetry}

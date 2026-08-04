@@ -249,7 +249,7 @@ const MainFC = () => {
             <div className="pointer-events-none absolute left-0 top-0 w-1/2 h-full bg-gradient-to-r from-[#297bc9]/8 to-transparent" />
             <div className="pointer-events-none absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-[#c7061c]/8 to-transparent" />
 
-            {/* LEFT — MERN */}
+            {/* LEFT - MERN */}
             <motion.div className="w-full lg:w-1/3 flex flex-col items-center lg:items-end gap-5" initial="hidden" animate="show" variants={fadeUp}>
               <motion.div className="text-center lg:text-right transformers" variants={slideLeft} initial="hidden" animate="show">
                 <p className="text-[#297bc9] text-3xl lg:text-4xl font-bold tracking-wide leading-tight">MERN STACK</p>
@@ -276,7 +276,7 @@ const MainFC = () => {
               </div>
             </motion.div>
 
-            {/* RIGHT — AI/ML */}
+            {/* RIGHT - AI/ML */}
             <motion.div className="w-full lg:w-1/3 flex flex-col items-center lg:items-start gap-5" initial="hidden" animate="show" variants={fadeUp}>
               <motion.div className="flex flex-wrap justify-center lg:justify-start" variants={staggerIcons} initial="hidden" animate="show">
                 {aiml_icons.map((item) => <RedIcon key={item.id} src={item.src} alt={item.alt} />)}

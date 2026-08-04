@@ -16,6 +16,7 @@ export async function POST(request) {
     const from_name = typeof body.from_name === 'string' ? body.from_name.trim() : '';
     const from_email = typeof body.from_email === 'string' ? body.from_email.trim() : '';
     const message = typeof body.message === 'string' ? body.message.trim() : '';
+    const sketch_data = typeof body.sketch_data === 'string' ? body.sketch_data.trim() : '';
 
     if (!from_name || from_name.length < 2) {
       return NextResponse.json({ error: 'Name is required.' }, { status: 400 });
@@ -23,8 +24,8 @@ export async function POST(request) {
     if (!from_email || !EMAIL_RE.test(from_email)) {
       return NextResponse.json({ error: 'A valid email address is required.' }, { status: 400 });
     }
-    if (!message) {
-      return NextResponse.json({ error: 'Message is required.' }, { status: 400 });
+    if (!message && !sketch_data) {
+      return NextResponse.json({ error: 'Message or sketch is required.' }, { status: 400 });
     }
 
     const { serviceId, templateId, publicKey } = getEmailJsConfig();
@@ -39,14 +40,21 @@ export async function POST(request) {
       timeStyle: 'short',
     });
 
+    let formattedMessage = message;
+    if (sketch_data) {
+      formattedMessage = `${message}\n\n🎨 [DRAWN SKETCH DATA preview]:\n${sketch_data}`;
+    }
+
     const templateParams = {
       from_name,
       from_email,
       name: from_name,
       email: from_email,
-      message,
+      message: formattedMessage,
+      sketch_image: sketch_data,
+      sketch_data: sketch_data,
       reply_to: from_email,
-      title: `New message from ${from_name}`,
+      title: sketch_data ? `New Sketch & Message from ${from_name}` : `New message from ${from_name}`,
       time,
     };
 
