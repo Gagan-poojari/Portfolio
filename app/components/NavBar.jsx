@@ -11,7 +11,7 @@ const navLinks = [
   { name: 'Skills', section: 'skills', glyph: '⬡', num: '01' },
   { name: 'Courses', section: 'courses', glyph: '◎', num: '02' },
   { name: 'Projects', section: 'projects', glyph: '◈', num: '03' },
-  { name: 'Artworks', href: '/artworks', glyph: '🎨', num: '04' },
+  { name: 'Artworks', href: '/artworks', glyph: '✎', num: '04' },
   { name: 'Contact', section: 'contact', glyph: '◇', num: '05' },
 ];
 
@@ -544,6 +544,11 @@ const NavBar = () => {
               <div className="flex flex-col">
                 {navLinks.map((l, i) => {
                   const isAct = activeSection === l.section;
+                  const LinkOrBtn = l.href ? Link : 'button';
+                  const extraProps = l.href 
+                    ? { href: l.href, onClick: () => setMobileOpen(false) }
+                    : { onClick: () => { setMobileOpen(false); setTimeout(() => scrollToSection(l.section), 150); } };
+
                   return (
                     <motion.div
                       key={l.name}
@@ -551,13 +556,12 @@ const NavBar = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.04, duration: 0.28 }}
                     >
-                      <button
-                        onClick={() => { setMobileOpen(false); setTimeout(() => scrollToSection(l.section), 150); }}
-                        className="w-full flex items-center justify-between py-3.5 border-b group transition-all duration-200 cursor-none bg-transparent"
+                      <LinkOrBtn
+                        {...extraProps}
+                        className="w-full flex items-center justify-between py-3.5 border-b group transition-all duration-200 cursor-pointer bg-transparent"
                         style={{ borderColor: 'rgba(255,255,255,0.06)', fontFamily: "'Share Tech Mono',monospace" }}
                       >
                         <div className="flex items-center gap-3">
-                          {/* <span style={{ fontSize: 9, color: isAct ? '#fff' : 'rgba(255,255,255,0.25)', width: 14 }}>{l.glyph}</span> */}
                           <span className="text-sm tracking-wide" style={{ color: isAct ? '#fff' : 'rgba(255,255,255,0.5)' }}>{l.name}</span>
                           {isAct && <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff', opacity: 0.6 }} />}
                         </div>
@@ -565,7 +569,7 @@ const NavBar = () => {
                           <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)' }}>{l.num}</span>
                           <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }} className="group-hover:text-white/60 transition-colors">→</span>
                         </div>
-                      </button>
+                      </LinkOrBtn>
                     </motion.div>
                   );
                 })}
