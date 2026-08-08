@@ -54,7 +54,123 @@ const RedIcon = ({ src, alt }) => (
   </motion.div>
 )
 
-const GLITCH_CHARS = '!<>-_\\/[]{}-=+*^?#@%$&ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+// ── Cinematic name reveal using Bebas Neue ──────────────────────────────────
+function CinematicHeading({ phase }) {
+  const welcomeLines = ['WELCOME', 'TO MY PORTFOLIO']
+  const nameLines = [{ text: 'GAGAN', solid: true }, { text: 'POOJARI', solid: false }]
+
+  return (
+    <div className="relative flex flex-col items-center justify-center text-center px-4 select-none" style={{ minHeight: 140 }}>
+      <AnimatePresence mode="wait">
+
+        {/* Phase 0 — Welcome */}
+        {phase === 0 && (
+          <motion.div
+            key="welcome"
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            variants={{
+              hidden: {},
+              show: { transition: { staggerChildren: 0.13 } },
+              exit: { transition: { staggerChildren: 0.07, staggerDirection: -1 } },
+            }}
+            className="flex flex-col items-center"
+            style={{ gap: '0.15em' }}
+          >
+            {welcomeLines.map((word, i) => (
+              <div key={i} style={{ overflow: 'hidden' }}>
+                <motion.span
+                  variants={{
+                    hidden: { y: '110%', opacity: 0 },
+                    show:  { y: 0, opacity: 1, transition: { duration: 0.65, ease: [0.16, 1, 0.3, 1] } },
+                    exit:  { y: '-115%', opacity: 0, transition: { duration: 0.38, ease: [0.7, 0, 0.84, 0] } },
+                  }}
+                  className="block"
+                  style={{
+                    fontFamily: 'var(--font-jetbrains), monospace',
+                    fontSize: i === 0 ? 'clamp(0.9rem, 4.5vw, 2rem)' : 'clamp(0.55rem, 2.2vw, 0.9rem)',
+                    fontWeight: i === 0 ? 500 : 300,
+                    letterSpacing: i === 0 ? '0.28em' : '0.6em',
+                    color: i === 0 ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.32)',
+                  }}
+                >
+                  {word}
+                </motion.span>
+              </div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Phase 1 — Name */}
+        {phase === 1 && (
+          <motion.div
+            key="name"
+            initial="hidden"
+            animate="show"
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.18, delayChildren: 0.04 } } }}
+            className="flex flex-col items-center"
+            style={{ gap: 0, lineHeight: 0.88 }}
+          >
+            {nameLines.map(({ text, solid }, i) => (
+              <div key={i} style={{ overflow: 'hidden' }}>
+                <motion.h1
+                  variants={{
+                    hidden: { y: '108%', skewY: 3, opacity: 0 },
+                    show: { y: 0, skewY: 0, opacity: 1, transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] } },
+                  }}
+                  style={{
+                    fontFamily: 'var(--font-bebas), sans-serif',
+                    fontSize: 'clamp(3.5rem, 14vw, 8.5rem)',
+                    fontWeight: 400,
+                    letterSpacing: '0.03em',
+                    lineHeight: 0.88,
+                    margin: 0,
+                    WebkitTextStroke: solid ? '0px' : '1.5px rgba(255,255,255,0.7)',
+                    color: solid ? 'rgba(255,255,255,0.95)' : 'transparent',
+                  }}
+                >
+                  {text}
+                </motion.h1>
+              </div>
+            ))}
+
+            {/* Gradient rule + tagline */}
+            <motion.div
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{ scaleX: 1, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="mt-5 w-full flex flex-col items-center gap-2"
+              style={{ transformOrigin: 'left center' }}
+            >
+              <div style={{
+                height: '1px',
+                width: '100%',
+                background: 'linear-gradient(90deg, rgba(41,123,201,0.8), rgba(255,255,255,0.12), rgba(199,6,28,0.8))',
+              }} />
+              <motion.p
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9, duration: 0.5 }}
+                style={{
+                  fontFamily: 'var(--font-dm-sans), sans-serif',
+                  fontSize: 'clamp(0.5rem, 1.4vw, 0.68rem)',
+                  letterSpacing: '0.38em',
+                  color: 'rgba(255,255,255,0.28)',
+                  fontWeight: 400,
+                  textTransform: 'uppercase',
+                }}
+              >
+                Mern Stack &nbsp;·&nbsp; AI / ML &nbsp;·&nbsp; Artist
+              </motion.p>
+            </motion.div>
+          </motion.div>
+        )}
+
+      </AnimatePresence>
+    </div>
+  )
+}
 
 function GlitchDecodeHeading({ text, triggered }) {
   const [letters, setLetters] = useState(() =>
@@ -216,30 +332,15 @@ function GlitchDecodeHeading({ text, triggered }) {
 }
 
 const MainFC = () => {
-  const [heading, setHeading] = useState('WELCOME TO MY PORTFOLIO...')
-  const [triggered, setTriggered] = useState(false)
-  const [hasSwitched, setHasSwitched] = useState(false)
+  const [phase, setPhase] = useState(0)
 
   useEffect(() => {
-    if (hasSwitched) return
-    const t = setTimeout(() => {
-      setHeading("I'M GAGAN POOJARI")
-      setTriggered(true)
-      setHasSwitched(true)
-    }, 2500)
+    const t = setTimeout(() => setPhase(1), 2200)
     return () => clearTimeout(t)
-  }, [hasSwitched])
+  }, [])
 
   return (
     <>
-      <style>{`
-        @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
-        .heading-cursor {
-          display:inline-block; width:3px; height:0.85em;
-          background:#f0f0f0; margin-left:4px; vertical-align:middle;
-          border-radius:1px; animation:cursor-blink 1.1s step-end infinite;
-        }
-      `}</style>
 
       <div className="min-h-screen flex flex-col justify-center items-center gap-16 lg:gap-20 p-8 pt-24 overflow-hidden">
 
@@ -290,7 +391,7 @@ const MainFC = () => {
           </div>
         </Tilt>
 
-        <GlitchDecodeHeading text={heading} triggered={triggered} />
+        <CinematicHeading phase={phase} />
 
       </div>
     </>

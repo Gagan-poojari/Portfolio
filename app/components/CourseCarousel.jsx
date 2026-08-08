@@ -169,72 +169,40 @@ function TiltCard({ children, style, className, onClick }) {
 }
 
 /* ─────────────────────────────────────────────
-    GLITCH TEXT (matching portfolio hero)
+    SCAN REVEAL — replaces the old per-frame glitch
+    A single clip-path wipe + a bright scan-beam sweeping across it,
+    both driven by one framer-motion animate() call each — GPU
+    composited (transform/clip-path only), no per-frame React state,
+    so it can't stutter the scroll-in like the old rAF glitch did.
 ───────────────────────────────────────────── */
-const GLITCH_CHARS = '!<>-_\\/[]{}-=+*^?#@%$&ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-
-function GlitchText({ text, triggered }) {
-  const [letters, setLetters] = useState(() =>
-    text.split('').map(ch => ({ char: ch, locked: true, gx: 0, gy: 0, hue: 200 }))
-  )
-  const rafRef = useRef(null)
-  const stateRef = useRef({ locked: [], iter: [] })
-
-  useEffect(() => {
-    setLetters(text.split('').map(ch => ({ char: ch, locked: true, gx: 0, gy: 0, hue: 200 })))
-  }, [text])
-
-  useEffect(() => {
-    if (!triggered) return
-    const MAX = 8, STAGGER = 40
-    stateRef.current.locked = Array(text.length).fill(false)
-    stateRef.current.iter = Array(text.length).fill(-9999)
-    text.split('').forEach((_, i) => {
-      setTimeout(() => { stateRef.current.iter[i] = 0 }, i * STAGGER)
-    })
-    let last = 0
-    const tick = ts => {
-      if (ts - last < 44) { rafRef.current = requestAnimationFrame(tick); return }
-      last = ts
-      const s = stateRef.current
-      let allDone = true
-      const next = []
-      for (let i = 0; i < text.length; i++) {
-        if (s.locked[i]) { next.push({ char: text[i], locked: true, gx: 0, gy: 0, hue: 200 }); continue }
-        if (s.iter[i] < 0) { next.push({ char: ' ', locked: false, gx: 0, gy: 0, hue: 200 }); allDone = false; continue }
-        allDone = false
-        if (s.iter[i] >= MAX) {
-          s.locked[i] = true
-          next.push({ char: text[i], locked: true, gx: 0, gy: 0, hue: 200 })
-        } else {
-          const bias = s.iter[i] / MAX
-          const ch = Math.random() < bias
-            ? text[i]
-            : GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]
-          s.iter[i]++
-          next.push({ char: ch, locked: false, gx: (Math.random() - 0.5) * 5, gy: (Math.random() - 0.5) * 3, hue: Math.floor(Math.random() * 60) + 180 })
-        }
-      }
-      setLetters(next)
-      if (allDone) return
-      rafRef.current = requestAnimationFrame(tick)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
-  }, [triggered, text])
-
+function ScanReveal({ text, triggered, color = '#3B82F6' }) {
   return (
-    <span>
-      {letters.map((l, i) => (
-        <span key={i} style={{
-          display: 'inline-block',
-          transform: l.locked ? 'none' : `translate(${l.gx}px,${l.gy}px)`,
-          color: l.locked ? 'inherit' : `hsl(${l.hue},80%,70%)`,
-          textShadow: l.locked ? 'none' : `${(Math.random() - 0.5) * 3}px 0 rgba(199,6,28,0.7),${(Math.random() - 0.5) * 3}px 0 rgba(41,123,201,0.7)`,
-        }}>
-          {text[i] === ' ' ? '\u00A0' : l.char}
-        </span>
-      ))}
+    <span style={{ position: 'relative', display: 'inline-block' }}>
+      <motion.span
+        initial={{ clipPath: 'inset(0 100% 0 0)' }}
+        animate={triggered ? { clipPath: 'inset(0 0% 0 0)' } : {}}
+        transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1] }}
+        style={{ display: 'inline-block' }}
+      >
+        {text}
+      </motion.span>
+
+      {triggered && (
+        <motion.span
+          initial={{ left: '0%', opacity: 0 }}
+          animate={{ left: '100%', opacity: [0, 1, 1, 0] }}
+          transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1], times: [0, 0.08, 0.85, 1] }}
+          style={{
+            position: 'absolute',
+            top: '-6%',
+            bottom: '-6%',
+            width: '3px',
+            background: color,
+            boxShadow: `0 0 16px 3px ${color}, 0 0 40px 10px ${color}55`,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
     </span>
   )
 }
@@ -772,7 +740,7 @@ export default function CourseCarousel() {
                   COURSES &
                 </div>
                 <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 'clamp(28px,7vw,80px)', WebkitTextStroke: '2px rgba(59,130,246,0.8)', color: 'transparent', filter: 'drop-shadow(0 0 28px rgba(59,130,246,0.3))' }}>
-                  <GlitchText text="CERTIFICATIONS" triggered={glitchTriggered} />
+                  <ScanReveal text="CERTIFICATIONS" triggered={glitchTriggered} color="#3B82F6" />
                 </div>
               </h2>
             </div>

@@ -351,7 +351,7 @@ const NavBar = () => {
       <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
       {/* ── SCROLL PROGRESS BAR ── */}
-      <div
+      {/* <div
         className="fixed top-0 left-0 z-[200] h-[1.5px] pointer-events-none"
         style={{
           width: `${progress}%`,
@@ -361,7 +361,7 @@ const NavBar = () => {
           transition: 'width 0.06s linear, opacity 0.4s ease',
           boxShadow: '0 0 8px rgba(255,255,255,0.4)',
         }}
-      />
+      /> */}
 
       {/* ── NAVBAR ── */}
       <motion.header
