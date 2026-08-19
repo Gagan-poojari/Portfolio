@@ -3,6 +3,7 @@ import MainFC from "./components/MainFC";
 import SlideBar from "./components/SideBar";
 // import HeroSection from "./components/HeroSection";
 import { StarsBackground } from "./components/StarBG";
+import MainBG from "./components/MainBG";
 import SkillsSection from "./components/SkillsSection";
 import CourseCarousel from "./components/CourseCarousel";
 import ProjectSection from "./components/ProjectSection";
@@ -17,11 +18,11 @@ export default function Home() {
     <div>
       {/* <Loader onComplete={() => setLoaded(true)} /> */}
       {/* <HeroSection /> */}
-      <StarsBackground starColor="#ffffff" speed={60} factor={0.08}>
+      <MainBG className="min-h-screen">
         <div className="relative z-10 flex items-center justify-center min-h-screen text-white">
           <MainFC />
         </div>
-      </StarsBackground>
+      </MainBG>
       <Navbar />
       <SlideBar />
       <div className="h-[2px] bg-[#000000bc]"></div>
