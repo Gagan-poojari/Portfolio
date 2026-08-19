@@ -149,7 +149,7 @@ function CinematicHeading({ phase }) {
                   textTransform: 'uppercase',
                 }}
               >
-                <span className="text-[#c7061c]">MERN STACK</span> &nbsp;·&nbsp; <span className="text-[#297bc9]">AI / ML</span> &nbsp;·&nbsp; <span>ARTIST</span>
+                <span className="text-[#c7061c]">MERN STACK</span> &nbsp;·&nbsp; <span>ARTIST</span> &nbsp;·&nbsp; <span className="text-[#297bc9]">AI / ML</span> 
               </motion.p>
             </motion.div>
           </motion.div>
