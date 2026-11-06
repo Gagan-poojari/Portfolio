@@ -1,5 +1,5 @@
 'use client';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaPencilAlt, 
@@ -9,15 +9,26 @@ import {
   FaTimes,
   FaPaperPlane,
   FaCheck,
-  FaSpinner
+  FaSpinner,
+  FaUndo,
+  FaMagic
 } from 'react-icons/fa';
+
+const TRACE_TEMPLATES = [
+  { id: 'none', label: 'Blank Canvas' },
+  { id: 'ronaldo-goat', label: 'Trace CR7', img: '/artworks/ronaldo-goat.webp' },
+  { id: 'paul-walker', label: 'Trace Paul Walker', img: '/artworks/paul-walker-portrait.webp' },
+  { id: 'radha-krishna-eyes', label: 'Trace Divine Eyes', img: '/artworks/radha-krishna-eyes.webp' },
+];
 
 export default function DrawingSandbox({ isOpen, onClose }) {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [tool, setTool] = useState('charcoal');
-  const [brushSize, setBrushSize] = useState(4);
+  const [brushSize, setBrushSize] = useState(5);
   const [paperTexture, setPaperTexture] = useState('dark');
+  const [traceTemplate, setTraceTemplate] = useState('none');
+  const [history, setHistory] = useState([]);
 
   // Send Sketch Form State
   const [showSendModal, setShowSendModal] = useState(false);
@@ -28,12 +39,25 @@ export default function DrawingSandbox({ isOpen, onClose }) {
   const [sentSuccess, setSentSuccess] = useState(false);
   const [sendError, setSendError] = useState('');
   const [sketchDataUrl, setSketchDataUrl] = useState('');
-  const [compactSketchData, setCompactSketchData] = useState('');
 
-  // Audio Context Ref for Real Charcoal Scratching Sound
-  const audioCtxRef = useRef(null);
-  const noiseNodeRef = useRef(null);
-  const gainNodeRef = useRef(null);
+  const fillBackground = useCallback((ctx, w, h, texture) => {
+    if (texture === 'dark') {
+      ctx.fillStyle = '#0c0c10';
+    } else if (texture === 'bristol') {
+      ctx.fillStyle = '#fafaf9';
+    } else {
+      ctx.fillStyle = '#1c1917';
+    }
+    ctx.fillRect(0, 0, w, h);
+  }, []);
+
+  const saveHistoryState = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    setHistory((prev) => [...prev.slice(-15), imageData]);
+  }, []);
 
   // Initialize Canvas
   useEffect(() => {
@@ -42,93 +66,53 @@ export default function DrawingSandbox({ isOpen, onClose }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = 440;
+    const parent = canvas.parentElement;
+    canvas.width = parent.clientWidth || 700;
+    canvas.height = 460;
 
     fillBackground(ctx, canvas.width, canvas.height, paperTexture);
-  }, [isOpen, paperTexture]);
+    setHistory([]);
+  }, [isOpen, paperTexture, fillBackground]);
 
-  const fillBackground = (ctx, w, h, texture) => {
-    if (texture === 'dark') {
-      ctx.fillStyle = '#09090b';
-    } else if (texture === 'bristol') {
-      ctx.fillStyle = '#f8fafc';
-    } else {
-      ctx.fillStyle = '#1c1917';
+  const handleUndo = () => {
+    if (history.length <= 1) {
+      clearCanvas();
+      return;
     }
-    ctx.fillRect(0, 0, w, h);
-  };
-
-  // Real Charcoal Scratching Sound Generator
-  const playScratchSound = () => {
-    try {
-      if (!audioCtxRef.current) {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return;
-        audioCtxRef.current = new AudioCtx();
-      }
-
-      const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-
-      if (!noiseNodeRef.current) {
-        const bufferSize = ctx.sampleRate;
-        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const output = noiseBuffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          output[i] = Math.random() * 2 - 1;
-        }
-
-        const whiteNoise = ctx.createBufferSource();
-        whiteNoise.buffer = noiseBuffer;
-        whiteNoise.loop = true;
-
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(1200, ctx.currentTime);
-        filter.Q.setValueAtTime(3.0, ctx.currentTime);
-
-        const gain = ctx.createGain();
-        gain.gain.setValueAtTime(0.015, ctx.currentTime);
-
-        whiteNoise.connect(filter);
-        filter.connect(gain);
-        gain.connect(ctx.destination);
-
-        whiteNoise.start();
-
-        noiseNodeRef.current = whiteNoise;
-        gainNodeRef.current = gain;
-      } else if (gainNodeRef.current) {
-        gainNodeRef.current.gain.setValueAtTime(0.02, ctx.currentTime);
-      }
-    } catch (e) {
-      // Audio fallback
-    }
-  };
-
-  const stopScratchSound = () => {
-    if (gainNodeRef.current && audioCtxRef.current) {
-      try {
-        gainNodeRef.current.gain.setValueAtTime(0.0001, audioCtxRef.current.currentTime);
-      } catch (e) {}
-    }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const newHistory = [...history];
+    newHistory.pop();
+    const previous = newHistory[newHistory.length - 1];
+    ctx.putImageData(previous, 0, 0);
+    setHistory(newHistory);
   };
 
   const getToolSettings = () => {
     switch (tool) {
       case 'charcoal':
-        return { color: paperTexture === 'bristol' ? '#111827' : '#e4e4e7', alpha: 0.85 };
+        return { 
+          color: paperTexture === 'bristol' ? '#18181b' : '#f4f4f5', 
+          alpha: 0.9 
+        };
       case 'graphite':
-        return { color: paperTexture === 'bristol' ? '#4b5563' : '#a1a1aa', alpha: 0.5 };
+        return { 
+          color: paperTexture === 'bristol' ? '#52525b' : '#a1a1aa', 
+          alpha: 0.55 
+        };
       case 'highlight':
-        return { color: '#ffffff', alpha: 0.9 };
+        return { 
+          color: '#ffffff', 
+          alpha: 0.95 
+        };
       case 'eraser':
-        return { color: paperTexture === 'bristol' ? '#f8fafc' : paperTexture === 'dark' ? '#09090b' : '#1c1917', alpha: 1 };
+        return { 
+          color: paperTexture === 'bristol' ? '#fafaf9' : paperTexture === 'dark' ? '#0c0c10' : '#1c1917', 
+          alpha: 1 
+        };
       default:
-        return { color: '#ffffff', alpha: 0.8 };
+        return { color: '#ffffff', alpha: 0.85 };
     }
   };
 
@@ -155,7 +139,6 @@ export default function DrawingSandbox({ isOpen, onClose }) {
     ctx.lineJoin = 'round';
 
     setIsDrawing(true);
-    playScratchSound();
   };
 
   const draw = (e) => {
@@ -173,14 +156,12 @@ export default function DrawingSandbox({ isOpen, onClose }) {
 
     ctx.lineTo(x, y);
     ctx.stroke();
-
-    playScratchSound();
   };
 
   const stopDrawing = () => {
     if (!isDrawing) return;
     setIsDrawing(false);
-    stopScratchSound();
+    saveHistoryState();
   };
 
   const clearCanvas = () => {
@@ -188,13 +169,14 @@ export default function DrawingSandbox({ isOpen, onClose }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     fillBackground(ctx, canvas.width, canvas.height, paperTexture);
+    setHistory([]);
   };
 
   const downloadSketch = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement('a');
-    link.download = 'gagan-sketch.png';
+    link.download = `my-drawing-gagan-atelier.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   };
@@ -202,22 +184,8 @@ export default function DrawingSandbox({ isOpen, onClose }) {
   const openSendDrawer = () => {
     const canvas = canvasRef.current;
     if (canvas) {
-      // High-res preview data URL
       const fullData = canvas.toDataURL('image/png');
       setSketchDataUrl(fullData);
-
-      // Compress to 380x280 JPEG for lightweight email payload (~15KB)
-      try {
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = 380;
-        tempCanvas.height = 280;
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCtx.drawImage(canvas, 0, 0, 380, 280);
-        const compactJpeg = tempCanvas.toDataURL('image/jpeg', 0.6);
-        setCompactSketchData(compactJpeg);
-      } catch (e) {
-        setCompactSketchData(fullData);
-      }
     }
     setShowSendModal(true);
   };
@@ -225,7 +193,7 @@ export default function DrawingSandbox({ isOpen, onClose }) {
   const handleSendSketch = async (e) => {
     e.preventDefault();
     if (!senderName.trim() || !senderEmail.trim()) {
-      setSendError('Please provide your name and email.');
+      setSendError('Please enter your name and email.');
       return;
     }
 
@@ -233,7 +201,7 @@ export default function DrawingSandbox({ isOpen, onClose }) {
     setSendError('');
 
     try {
-      const userMsg = senderMessage.trim() || 'No message provided.';
+      const userMsg = senderMessage.trim() || 'Drawn with the Atelier Sketchpad.';
       
       const res = await fetch('/api/contact', {
         method: 'POST',
@@ -242,7 +210,7 @@ export default function DrawingSandbox({ isOpen, onClose }) {
           from_name: senderName.trim(),
           from_email: senderEmail.trim(),
           message: userMsg,
-          sketch_data: compactSketchData || sketchDataUrl
+          sketch_data: sketchDataUrl
         })
       });
 
@@ -254,13 +222,13 @@ export default function DrawingSandbox({ isOpen, onClose }) {
           setSenderName('');
           setSenderEmail('');
           setSenderMessage('');
-        }, 2200);
+        }, 2500);
       } else {
         const data = await res.json();
-        setSendError(data.error || 'Could not transmit sketch. Please try again.');
+        setSendError(data.error || 'Could not send drawing. Please try again.');
       }
     } catch (err) {
-      setSendError('Connection issue. Please try again.');
+      setSendError('Network error. Please try again.');
     } finally {
       setSending(false);
     }
@@ -268,83 +236,97 @@ export default function DrawingSandbox({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
+  const currentTemplate = TRACE_TEMPLATES.find(t => t.id === traceTemplate);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md font-body">
       <motion.div
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.96 }}
-        className="relative w-full max-w-4xl bg-[#09090c] border border-white/20 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+        className="relative w-full max-w-4xl bg-[#0d0d12] border border-white/15 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
       >
         
         {/* Header */}
-        <div className="p-4 flex items-center justify-between border-b border-white/10 bg-white/[0.02]">
-          <div className="flex items-center gap-2">
-            <FaPencilAlt className="text-white/80" />
-            <h3 className="text-sm font-bold font-mono text-white">
-              Sketchpad Sandbox
-            </h3>
+        <div className="px-5 py-4 flex items-center justify-between border-b border-white/10 bg-white/[0.02]">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <span>The Visitor Sketchpad</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-zinc-300 font-normal">
+                  Interactive Studio
+                </span>
+              </h3>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Doodle something, trace an artwork, or send your sketch straight to Gagan.
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white"
+            className="p-2 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            title="Close"
           >
             <FaTimes />
           </button>
         </div>
 
-        {/* Toolbar */}
-        <div className="p-3.5 bg-[#0c0c10] border-b border-white/10 flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
+        {/* Toolbar Row 1: Tools, Size, Paper */}
+        <div className="px-5 py-2.5 bg-[#0a0a0e] border-b border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
           
-          <div className="flex items-center gap-2">
+          {/* Tools */}
+          <div className="flex items-center gap-1.5">
             {[
-              { id: 'charcoal', label: 'Charcoal (8B)', color: 'bg-zinc-400' },
-              { id: 'graphite', label: 'Graphite (2B)', color: 'bg-zinc-600' },
-              { id: 'highlight', label: 'White Pencil', color: 'bg-white text-black' },
+              { id: 'charcoal', label: '8B Charcoal', dot: 'bg-zinc-200' },
+              { id: 'graphite', label: '2B Lead', dot: 'bg-zinc-500' },
+              { id: 'highlight', label: 'White Chalk', dot: 'bg-white' },
               { id: 'eraser', label: 'Eraser', icon: FaEraser },
             ].map((t) => (
               <button
                 key={t.id}
                 onClick={() => setTool(t.id)}
-                className={`px-3 py-1 rounded-full border flex items-center gap-1.5 transition-all ${
+                className={`px-3 py-1.5 rounded-lg border flex items-center gap-2 transition-all cursor-pointer ${
                   tool === t.id
-                    ? 'border-white bg-white/20 text-white font-bold'
-                    : 'border-white/10 bg-white/5 text-white/50 hover:text-white'
+                    ? 'border-white/50 bg-white/15 text-white font-semibold shadow-sm'
+                    : 'border-white/5 bg-white/[0.03] text-zinc-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                {t.icon ? <t.icon className="text-xs" /> : <span className={`w-2 h-2 rounded-full ${t.color}`} />}
+                {t.icon ? <t.icon className="text-xs" /> : <span className={`w-2 h-2 rounded-full ${t.dot}`} />}
                 <span>{t.label}</span>
               </button>
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-white/50">Size:</span>
+          {/* Stroke Size */}
+          <div className="flex items-center gap-2 text-zinc-400">
+            <span>Stroke:</span>
             <input
               type="range"
               min="1"
-              max="24"
+              max="30"
               value={brushSize}
               onChange={(e) => setBrushSize(Number(e.target.value))}
               className="w-20 accent-white cursor-pointer"
             />
-            <span className="text-white font-bold w-5">{brushSize}</span>
+            <span className="text-white font-mono w-5">{brushSize}px</span>
           </div>
 
+          {/* Paper Type */}
           <div className="flex items-center gap-1.5">
-            <span className="text-white/50">Paper:</span>
+            <span className="text-zinc-400">Paper:</span>
             {[
-              { id: 'dark', label: 'Dark' },
-              { id: 'bristol', label: 'White' },
+              { id: 'dark', label: 'Noir Sheet' },
+              { id: 'bristol', label: 'Bristol White' },
               { id: 'parchment', label: 'Kraft' }
             ].map((p) => (
               <button
                 key={p.id}
                 onClick={() => setPaperTexture(p.id)}
-                className={`px-2 py-0.5 rounded text-[10px] border transition-all ${
+                className={`px-2.5 py-1 rounded-md text-[11px] border transition-all cursor-pointer ${
                   paperTexture === p.id 
-                    ? 'border-white bg-white/20 text-white font-bold' 
-                    : 'border-white/10 text-white/40 hover:text-white'
+                    ? 'border-white/50 bg-white/20 text-white font-medium' 
+                    : 'border-white/5 text-zinc-400 hover:text-white'
                 }`}
               >
                 {p.label}
@@ -354,8 +336,45 @@ export default function DrawingSandbox({ isOpen, onClose }) {
 
         </div>
 
-        {/* Canvas Area */}
-        <div className="relative w-full bg-black flex items-center justify-center p-3">
+        {/* Toolbar Row 2: Trace Guide Selector */}
+        <div className="px-5 py-2 bg-[#09090c] border-b border-white/5 flex items-center gap-2 text-xs overflow-x-auto">
+          <span className="text-zinc-500 font-mono text-[11px] flex items-center gap-1 shrink-0">
+            <FaMagic className="text-amber-400 text-[10px]" /> Tracing Guide:
+          </span>
+          {TRACE_TEMPLATES.map((tmpl) => (
+            <button
+              key={tmpl.id}
+              onClick={() => setTraceTemplate(tmpl.id)}
+              className={`px-2.5 py-1 rounded-full text-[11px] shrink-0 border transition-all cursor-pointer ${
+                traceTemplate === tmpl.id
+                  ? 'border-amber-400/60 bg-amber-400/15 text-amber-300 font-medium'
+                  : 'border-white/5 bg-white/[0.02] text-zinc-400 hover:text-white'
+              }`}
+            >
+              {tmpl.label}
+            </button>
+          ))}
+          {traceTemplate !== 'none' && (
+            <span className="text-[10px] text-zinc-500 font-mono ml-auto hidden sm:inline">
+              Faint guide shown underneath &bull; Shade over it!
+            </span>
+          )}
+        </div>
+
+        {/* Canvas Area with Optional Tracing Watermark */}
+        <div className="relative w-full bg-black/40 flex items-center justify-center p-3 sm:p-4 overflow-hidden">
+          
+          {/* Faint Tracing Watermark Guide */}
+          {currentTemplate?.img && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-3 sm:p-4 z-0">
+              <img
+                src={currentTemplate.img}
+                alt="Tracing Guide"
+                className="max-h-[440px] w-auto max-w-full object-contain opacity-20 filter grayscale invert"
+              />
+            </div>
+          )}
+
           <canvas
             ref={canvasRef}
             onMouseDown={startDrawing}
@@ -365,77 +384,93 @@ export default function DrawingSandbox({ isOpen, onClose }) {
             onTouchStart={startDrawing}
             onTouchMove={draw}
             onTouchEnd={stopDrawing}
-            className="w-full rounded-xl cursor-crosshair shadow-inner touch-none"
+            className="relative z-10 w-full rounded-xl cursor-crosshair shadow-2xl touch-none border border-white/10"
           />
         </div>
 
         {/* Footer Actions */}
-        <div className="p-3 border-t border-white/10 bg-[#09090c] flex items-center justify-between font-mono text-xs">
-          <button
-            onClick={clearCanvas}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 border border-white/15 transition-all"
-          >
-            <FaTrashAlt />
-            <span>Clear</span>
-          </button>
-
+        <div className="px-5 py-3.5 border-t border-white/10 bg-[#0a0a0e] flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <button
-              onClick={downloadSketch}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all"
+              onClick={handleUndo}
+              disabled={history.length === 0}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+              title="Undo last stroke"
             >
-              <FaDownload />
-              <span>Download</span>
+              <FaUndo className="text-[10px]" />
+              <span>Undo</span>
+            </button>
+            <button
+              onClick={clearCanvas}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 transition-all cursor-pointer"
+            >
+              <FaTrashAlt className="text-[10px]" />
+              <span>Clear</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={downloadSketch}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-white border border-white/15 transition-all font-medium cursor-pointer"
+            >
+              <FaDownload className="text-[11px]" />
+              <span>Save PNG</span>
             </button>
 
-            {/* SEND DIRECTLY TO GAGAN BUTTON */}
+            {/* Send to Gagan */}
             <button
               onClick={openSendDrawer}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black font-bold transition-all shadow"
+              className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-black font-semibold transition-all shadow-md cursor-pointer"
             >
-              <FaPaperPlane className="text-xs" />
-              <span>Send to Gagan ✉️</span>
+              <FaPaperPlane className="text-[11px]" />
+              <span>Send Drawing to Gagan</span>
             </button>
           </div>
         </div>
 
-        {/* Send Sketch Modal Overlay */}
+        {/* Send Modal Overlay */}
         <AnimatePresence>
           {showSendModal && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/95 backdrop-blur-md z-30 p-6 flex flex-col justify-center max-w-lg mx-auto"
+              className="absolute inset-0 bg-black/95 backdrop-blur-md z-30 p-6 sm:p-8 flex flex-col justify-center max-w-lg mx-auto"
             >
               <button
                 onClick={() => setShowSendModal(false)}
-                className="absolute top-4 right-4 p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10"
+                className="absolute top-5 right-5 p-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <FaTimes />
               </button>
 
-              <h4 className="text-lg font-bold font-mono text-white mb-1">
-                Send Your Sketch to Gagan
+              <h4 className="text-xl font-bold text-white mb-1">
+                Drop Your Sketch in My Inbox
               </h4>
-              <p className="text-xs font-mono text-zinc-400 mb-4">
-                Send your drawing along with a note directly to Gagan’s inbox.
+              <p className="text-xs text-zinc-400 mb-5 leading-relaxed">
+                I love seeing what visitors draw! Your sketch will be rendered into a direct viewable image and sent straight to my personal inbox.
               </p>
 
               {sentSuccess ? (
-                <div className="p-6 rounded-xl bg-white/5 border border-white/20 text-center space-y-2 font-mono">
+                <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
                   <FaCheck className="text-emerald-400 text-2xl mx-auto" />
-                  <h5 className="text-white font-bold text-sm">Sketch Transmitted!</h5>
-                  <p className="text-xs text-zinc-400">Gagan has received your drawing and message.</p>
+                  <h5 className="text-white font-semibold text-sm">Drawing Received!</h5>
+                  <p className="text-xs text-zinc-300">Thanks for sharing your art with me! I will check it out shortly.</p>
                 </div>
               ) : (
-                <form onSubmit={handleSendSketch} className="space-y-3 font-mono text-xs">
+                <form onSubmit={handleSendSketch} className="space-y-3.5 text-xs">
                   
-                  {/* Sketch Preview */}
                   {sketchDataUrl && (
-                    <div className="flex items-center gap-3 p-2 rounded-lg border border-white/10 bg-white/5">
-                      <img src={sketchDataUrl} alt="Your Sketch" className="w-16 h-12 object-cover rounded border border-white/20" />
-                      <span className="text-[11px] text-zinc-300">Your sketch will be transmitted to Gagan.</span>
+                    <div className="flex items-center gap-3 p-2.5 rounded-xl border border-white/10 bg-white/5">
+                      <img 
+                        src={sketchDataUrl} 
+                        alt="Your Sketch" 
+                        className="w-16 h-12 object-cover rounded-lg border border-white/15 bg-black" 
+                      />
+                      <span className="text-[11px] text-zinc-300">
+                        Your original drawing will be delivered cleanly.
+                      </span>
                     </div>
                   )}
 
@@ -447,7 +482,7 @@ export default function DrawingSandbox({ isOpen, onClose }) {
                       value={senderName}
                       onChange={(e) => setSenderName(e.target.value)}
                       placeholder="e.g. Alex"
-                      className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white outline-none focus:border-white/50"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white outline-none focus:border-white/50 transition-colors"
                     />
                   </div>
 
@@ -459,38 +494,38 @@ export default function DrawingSandbox({ isOpen, onClose }) {
                       value={senderEmail}
                       onChange={(e) => setSenderEmail(e.target.value)}
                       placeholder="alex@example.com"
-                      className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white outline-none focus:border-white/50"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white outline-none focus:border-white/50 transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-zinc-400 mb-1">Message / Note</label>
+                    <label className="block text-zinc-400 mb-1">Note / Message (Optional)</label>
                     <textarea
                       rows={3}
                       value={senderMessage}
                       onChange={(e) => setSenderMessage(e.target.value)}
-                      placeholder="What do you think of Gagan's art or your sketch?"
-                      className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white outline-none focus:border-white/50 resize-none"
+                      placeholder="Loved your Paul Walker sketch! Here's a quick doodle I made..."
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white outline-none focus:border-white/50 resize-none transition-colors"
                     />
                   </div>
 
-                  {sendError && <p className="text-red-400 text-[11px]">{sendError}</p>}
+                  {sendError && <p className="text-red-400 text-xs">{sendError}</p>}
 
-                  <div className="pt-2 flex justify-end gap-2">
+                  <div className="pt-2 flex justify-end gap-2.5">
                     <button
                       type="button"
                       onClick={() => setShowSendModal(false)}
-                      className="px-4 py-2 rounded-lg border border-white/15 text-zinc-400 hover:text-white"
+                      className="px-4 py-2 rounded-xl border border-white/15 text-zinc-400 hover:text-white transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={sending}
-                      className="px-5 py-2 rounded-lg bg-white text-black font-bold flex items-center gap-2 hover:bg-zinc-200 disabled:opacity-50"
+                      className="px-5 py-2 rounded-xl bg-white text-black font-semibold flex items-center gap-2 hover:bg-zinc-200 disabled:opacity-50 transition-colors cursor-pointer"
                     >
-                      {sending ? <FaSpinner className="animate-spin" /> : <FaPaperPlane />}
-                      <span>{sending ? 'Sending...' : 'Send Sketch'}</span>
+                      {sending ? <FaSpinner className="animate-spin" /> : <FaPaperPlane className="text-xs" />}
+                      <span>{sending ? 'Sending...' : 'Send Drawing'}</span>
                     </button>
                   </div>
 

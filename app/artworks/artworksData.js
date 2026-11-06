@@ -1,107 +1,227 @@
 export const ARTWORKS_DATA = [
   {
     id: 'ronaldo-goat',
-    title: 'CR7 - GOAT',
+    title: 'CR7 - The Icon',
+    subtitle: 'Torso Anatomy & Chiaroscuro Study',
     artist: 'Gagan Poojari',
     year: '2023',
     category: 'Sports',
     categorySlug: 'sports',
-    medium: 'Charcoal & Graphite on Bristol Smooth',
+    medium: 'Compressed Charcoal & Graphite on Bristol Smooth',
     dimensions: 'A3 (297 × 420 mm)',
-    timeSpent: '28 hrs',
+    timeSpent: '28 hours over 2 weeks',
     image: '/artworks/ronaldo-goat.webp',
-    description: 'Captured the iconic  pose focusing on shadow depth, torso muscular anatomy, and heavy charcoal contrast.',
-    details: [
-      'Anatomy & muscle shading',
-      'Heavy dark charcoal gradient',
-      'White graphite highlight strokes',
-      // 'Hand-signed original'
+    story: "I wanted to capture that raw, electric intensity of Ronaldo's celebration. The hardest part wasn't the muscles—it was getting the background so ridiculously black that the silhouette looks like it's stepping out of a dark void. My fingers were pitch-black for days.",
+    pencils: 'Staedtler 6B-8B, Cretacolor Charcoal Powder, Mono Zero Eraser',
+    funFact: 'Used an old makeup sponge to blend the skin tones without leaving fingerprint oil on the paper.',
+    hotspots: [
+      {
+        id: 'h1',
+        x: 48,
+        y: 45,
+        title: 'Muscle Shading',
+        note: 'Built in 4 transparent graphite layers so the muscle contours look rounded, not flat.'
+      },
+      {
+        id: 'h2',
+        x: 78,
+        y: 65,
+        title: 'Deep Void Background',
+        note: 'Pure compressed charcoal powder rubbed in with cotton pads to absorb 99% of ambient light.'
+      },
+      {
+        id: 'h3',
+        x: 28,
+        y: 30,
+        title: 'Edge Rim Light',
+        note: 'Carved out with a sharp kneaded eraser edge to make the silhouette jump off the page.'
+      }
     ],
-    accentColor: '#e4e4e7',
-    glowColor: 'rgba(255, 255, 255, 0.08)'
+    details: [
+      'Layered 8B charcoal shadow depths',
+      'Torso muscular anatomy study',
+      'Smooth graphite gradient transitions',
+      'White pencil rim lighting highlights'
+    ]
   },
   {
     id: 'paul-walker',
     title: 'Paul Walker',
+    subtitle: 'Remembering Brian O’Conner',
     artist: 'Gagan Poojari',
     year: '2024',
-    category: 'Portrait',
+    category: 'Portraits',
     categorySlug: 'portrait',
-    medium: 'Micro-Pencil Graphite & Charcoal',
+    medium: '0.3mm Micro-Pencil & Soft Charcoal',
     dimensions: 'A3 (297 × 420 mm)',
-    timeSpent: '34 hrs',
+    timeSpent: '34 hours of micro-details',
     image: '/artworks/paul-walker-portrait.webp',
-    description: 'A tribute portrait built layer by layer. High focus on subtle stubble texture, eye reflections, and soft blending stump transitions.',
-    details: [
-      'Layered facial stubble & hair texture',
-      'Iris reflections & light focus',
-      'Soft paper blending stump shading',
-      // 'Signed gagan__poojari'
+    story: "Growing up watching Fast & Furious, Paul Walker was my childhood hero. Drawing his smile was an emotional process. If you mess up the distance between the eyelids by even half a millimeter, the whole likeness is gone.",
+    pencils: 'Pentel 0.3mm 2B, Staedtler Mars Lumograph, Paper Stumps',
+    funFact: 'The tiny reflections in his pupils took an entire 3-hour evening listening to "See You Again" on loop.',
+    hotspots: [
+      {
+        id: 'h1',
+        x: 45,
+        y: 36,
+        title: 'The Pupil Reflection',
+        note: 'The secret to life in eyes: preserving the raw white paper for the highlight spot.'
+      },
+      {
+        id: 'h2',
+        x: 52,
+        y: 64,
+        title: '5 O’Clock Stubble',
+        note: 'Every single hair follicle was individually tapped on with a 0.3mm mechanical lead.'
+      },
+      {
+        id: 'h3',
+        x: 68,
+        y: 20,
+        title: 'Hair Wave Texture',
+        note: 'Shaded around the highlights rather than drawing black lines, keeping the hair luminous.'
+      }
     ],
-    accentColor: '#e4e4e7',
-    glowColor: 'rgba(255, 255, 255, 0.08)'
+    details: [
+      'Individual facial stubble & hair fiber detailing',
+      'Iris light reflection & tonal depth',
+      'Soft blending stump (tortillon) skin gradations',
+      'Mono Zero precision eraser highlights'
+    ]
   },
   {
     id: 'radha-krishna-eyes',
     title: 'Radha Krishna',
+    subtitle: 'The Sacred Gaze (Dual Split)',
     artist: 'Gagan Poojari',
     year: '2026',
     category: 'Fine Art',
     categorySlug: 'spiritual',
-    medium: 'Charcoal & White Highlights',
+    medium: 'Charcoal, Graphite & White Gel Ink',
     dimensions: 'A3 (297 × 420 mm)',
-    timeSpent: '30 hrs',
+    timeSpent: '30 hours',
     image: '/artworks/radha-krishna-eyes.webp',
-    description: 'Dual-panel sketch highlighting expressive eyes, traditional tilak, and hand-drawn white floral accents.',
-    details: [
-      'Dual horizontal split composition',
-      'Hand-drawn white floral motifs',
-      'Traditional Tilak & ornament details',
-      'High-contrast eye reflection'
+    story: "Instead of a standard portrait, I wanted to focus solely on the emotion held inside the eyes. The horizontal split composition creates a quiet dialog between both figures. The white florals and tilak were hand-inked on top of the charcoal.",
+    pencils: 'Staedtler 4B-10B, Sakura Gelly Roll 08 White, Artist Masking Tape',
+    funFact: 'Taped the center dividing line with low-tack draft tape to achieve that razor-sharp contrast split.',
+    hotspots: [
+      {
+        id: 'h1',
+        x: 48,
+        y: 25,
+        title: 'Radha’s Expression',
+        note: 'Soft graphite blending to give her eyes a gentler, reflective emotional tone.'
+      },
+      {
+        id: 'h2',
+        x: 50,
+        y: 72,
+        title: 'Krishna’s Gaze',
+        note: 'Darker charcoal values with intense contrast around the iris to create an arresting presence.'
+      },
+      {
+        id: 'h3',
+        x: 32,
+        y: 60,
+        title: 'Hand-Inked Ornaments',
+        note: 'White gel ink applied directly over dried charcoal for glowing traditional motifs.'
+      }
     ],
-    accentColor: '#e4e4e7',
-    glowColor: 'rgba(255, 255, 255, 0.08)'
+    details: [
+      'Dual-panel split composition',
+      'Expressive iris reflections & lash detailing',
+      'Hand-inked white floral motifs',
+      'Traditional Tilak & ornate jewelry shading'
+    ]
   },
   {
     id: 'ronaldo-portrait',
     title: 'Cristiano Ronaldo',
+    subtitle: 'Close-Up Portrait Study',
     artist: 'Gagan Poojari',
     year: '2025',
-    category: 'Portrait',
+    category: 'Portraits',
     categorySlug: 'portrait',
-    medium: 'Graphite (2B–10B)',
+    medium: 'Graphite (2B–10B) on 300gsm Paper',
     dimensions: 'A3 (297 × 420 mm)',
-    timeSpent: '25 hrs',
+    timeSpent: '25 hours',
     image: '/artworks/ronaldo-smiling-portrait.webp',
-    description: 'Close-up portrait capturing curl textures, subtle facial expression lines, and neck shading.',
-    details: [
-      'Hair strand & curl texturing',
-      'Expression & smile line shading',
-      'Kneaded eraser highlights',
-      // 'Hand-signed original'
+    story: "Close-up portraits are ruthless because human eyes immediately spot anything unnatural in skin texture. Spending hours rendering his hair curls was meditative and exhausting at the same time.",
+    pencils: 'Staedtler Mars Lumograph (2B, 4B, 8B, 10B), Kneaded Eraser',
+    funFact: 'Used a kneaded eraser molded into a sharp point like a needle to dab out tiny pores in the skin.',
+    hotspots: [
+      {
+        id: 'h1',
+        x: 56,
+        y: 22,
+        title: 'Ringlet Curls',
+        note: 'Hundreds of interlocking circular strokes blended lightly with a tortillon.'
+      },
+      {
+        id: 'h2',
+        x: 42,
+        y: 56,
+        title: 'Smile Creases',
+        note: 'Soft graphite gradients to make the smile lines look warm rather than harsh wrinkles.'
+      },
+      {
+        id: 'h3',
+        x: 64,
+        y: 78,
+        title: 'Neck Muscle Tension',
+        note: 'Broad 8B graphite strokes defining the tendon structure under the jaw.'
+      }
     ],
-    accentColor: '#e4e4e7',
-    glowColor: 'rgba(255, 255, 255, 0.08)'
+    details: [
+      'Layered curl texturing with 4B-8B pencils',
+      'Natural expression lines and skin tones',
+      'Kneaded eraser edge highlights',
+      'Subtle cross-hatching and stump blending'
+    ]
   },
   {
     id: 'falling-in-eyes',
     title: 'Falling',
+    subtitle: 'Surrealism & Perspective Experiment',
     artist: 'Gagan Poojari',
     year: '2023',
-    category: 'Surrealism',
-    categorySlug: 'surrealism',
-    medium: 'Graphite & Charcoal on Paper',
+    category: 'Fine Art',
+    categorySlug: 'spiritual',
+    medium: 'Charcoal Ink & Graphite on Heavyweight Sheet',
     dimensions: 'A3 (297 × 420 mm)',
-    timeSpent: '26 hrs',
+    timeSpent: '26 hours',
     image: '/artworks/falling-in-eyes.webp',
-    description: 'A conceptual surrealist piece depicting a figure falling into a detailed pair of eyes, blending smooth skin shading with stark line boundaries.',
-    details: [
-      'Surreal perspective composition',
-      'Detailed eye & eyeliner shading',
-      'Cross-framed border structure',
-      // 'Hand-signed original signature'
+    story: "Late one night I wanted to do something weirder than usual portraits. The concept: what if a person is literally tumbling down into an infinite pair of eyes? Merging architectural ruler lines with soft anatomical shading was a blast.",
+    pencils: 'Charcoal Pencil, Architect Ruler, Staedtler HB & 6B',
+    funFact: 'Drafted the geometric borders using an engineering T-square before touching any charcoal.',
+    hotspots: [
+      {
+        id: 'h1',
+        x: 50,
+        y: 48,
+        title: 'Falling Silhouette',
+        note: 'Solid jet-black ink to give the falling figure maximum graphic impact against the shaded iris.'
+      },
+      {
+        id: 'h2',
+        x: 76,
+        y: 35,
+        title: 'Geometric Grid Framing',
+        note: 'Constructed with drafting tools to contrast strict structure with organic human eyes.'
+      },
+      {
+        id: 'h3',
+        x: 32,
+        y: 36,
+        title: 'Eyeliner Contrast',
+        note: 'Deep charcoal strokes creating a dramatic stage for the central subject.'
+      }
     ],
-    accentColor: '#e4e4e7',
-    glowColor: 'rgba(255, 255, 255, 0.08)'
+    details: [
+      'Surreal perspective & silhouette composition',
+      'High-contrast eyeliner and iris shading',
+      'Cross-framed perspective grid structure',
+      'Layered shadow transitions'
+    ]
   }
 ];

@@ -1,414 +1,212 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FaExpand, 
-  FaSearchPlus, 
-  FaClock, 
-  FaCheck, 
-  FaTh, 
-  FaThLarge, 
-  FaSlidersH,
-  FaChevronLeft,
-  FaChevronRight
-} from 'react-icons/fa';
+import { FaClock, FaFire, FaHeart, FaSearchPlus, FaLightbulb } from 'react-icons/fa';
 
 export default function ArtGallery({
   artworks,
   activeCategory,
-  onSelectArtwork,
-  magnifierActive,
-  audioEnabled
+  onSelectArtwork
 }) {
   const [hoveredId, setHoveredId] = useState(null);
-  const [lensPos, setLensPos] = useState({ x: 0, y: 0, show: false, artworkId: null });
-  
-  // Layout Mode: 'fit' (4-col compact - all in 1 screen), 'detailed' (2-col), 'filmstrip' (horizontal)
-  const [viewLayout, setViewLayout] = useState('fit');
-  
-  // Dynamic Studio Spotlight Angle (in degrees)
-  const [spotlightAngle, setSpotlightAngle] = useState(45);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0, id: null });
+  const [likes, setLikes] = useState({});
 
-  const filteredArtworks = activeCategory === 'all'
-    ? artworks
-    : artworks.filter(a => a.categorySlug === activeCategory);
-
-  const triggerAudioClick = () => {
-    if (!audioEnabled || typeof window === 'undefined') return;
+  useEffect(() => {
     try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const stored = localStorage.getItem('gagan_art_likes');
+      if (stored) {
+        setLikes(JSON.parse(stored));
+      } else {
+        // Base initial human likes so the community feel is warm
+        const initial = {
+          'ronaldo-goat': 42,
+          'paul-walker': 58,
+          'radha-krishna-eyes': 64,
+          'ronaldo-portrait': 37,
+          'falling-in-eyes': 29,
+        };
+        setLikes(initial);
+      }
+    } catch (e) {}
+  }, []);
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(320, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(640, ctx.currentTime + 0.06);
-
-      gain.gain.setValueAtTime(0.03, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start();
-      osc.stop(ctx.currentTime + 0.06);
-    } catch (e) {
-      // Audio fallback
-    }
-  };
-
-  const handleMouseMove = (e, artwork) => {
-    if (!magnifierActive) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setLensPos({
-      x,
-      y,
-      percentX: (x / rect.width) * 100,
-      percentY: (y / rect.height) * 100,
-      show: true,
-      artworkId: artwork.id,
-      imageSrc: artwork.image
+  const handleLike = (e, artId) => {
+    e.stopPropagation();
+    setLikes(prev => {
+      const next = { ...prev, [artId]: (prev[artId] || 0) + 1 };
+      try {
+        localStorage.setItem('gagan_art_likes', JSON.stringify(next));
+      } catch (err) {}
+      return next;
     });
   };
 
-  const handleMouseLeave = () => {
-    setLensPos(prev => ({ ...prev, show: false }));
+  const filteredArtworks = activeCategory === 'all'
+    ? artworks
+    : artworks.filter(a => {
+        if (activeCategory === 'spiritual') {
+          return a.categorySlug === 'spiritual' || a.categorySlug === 'surrealism';
+        }
+        return a.categorySlug === activeCategory;
+      });
+
+  const handleMouseMove = (e, artId) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setMousePos({ x, y, id: artId });
   };
 
-  // Compute CSS box-shadow for museum spotlight based on angle
-  const rad = (spotlightAngle * Math.PI) / 180;
-  const shadowX = Math.round(Math.cos(rad) * 12);
-  const shadowY = Math.round(Math.sin(rad) * 12);
-
   return (
-    <section className="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto font-body">
       
-      {/* Gallery Controls Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-b border-white/10 pb-4 font-mono">
+      {/* Gallery Header */}
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-10 pb-4 border-b border-white/10">
         <div>
-          <h2 className="text-base font-bold text-white uppercase tracking-wider">
-            Exhibition Works ({filteredArtworks.length})
+          <h2 className="text-2xl sm:text-3xl font-display uppercase tracking-wider text-white">
+            The Sketch Collection
           </h2>
-          <p className="text-xs text-white/40 mt-0.5">
-            {magnifierActive 
-              ? 'Hover to inspect pencil strokes with precision glass lens' 
-              : 'Click any piece to inspect'}
+          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+            Move your cursor across any drawing to catch the graphite shine. Tap to inspect secrets.
           </p>
         </div>
 
-        {/* Right Tools: Layout Switcher + Spotlight Angle Slider */}
-        <div className="flex items-center gap-3">
-          
-          {/* Studio Spotlight Angle Slider */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-white/60">
-            <FaSlidersH className="text-white/40 text-[10px]" />
-            <span className="text-[10px]">Spotlight:</span>
-            <input
-              type="range"
-              min="0"
-              max="360"
-              value={spotlightAngle}
-              onChange={(e) => setSpotlightAngle(Number(e.target.value))}
-              className="w-16 accent-white cursor-pointer"
-              title="Adjust Museum Spotlight Angle"
-            />
-            <span className="text-[10px] w-6 text-right font-bold text-white">{spotlightAngle}°</span>
-          </div>
-
-          {/* Layout Mode Buttons */}
-          <div className="flex items-center bg-white/5 border border-white/10 rounded-full p-0.5">
-            <button
-              onClick={() => setViewLayout('fit')}
-              className={`px-3 py-1 rounded-full text-xs font-mono flex items-center gap-1.5 transition-all ${
-                viewLayout === 'fit' ? 'bg-white text-black font-bold shadow' : 'text-white/50 hover:text-white'
-              }`}
-              title="Compact View - Fit all 4 artworks on 1 screen"
-            >
-              <FaTh className="text-[10px]" />
-              <span>Compact</span>
-            </button>
-
-            <button
-              onClick={() => setViewLayout('detailed')}
-              className={`px-3 py-1 rounded-full text-xs font-mono flex items-center gap-1.5 transition-all ${
-                viewLayout === 'detailed' ? 'bg-white text-black font-bold shadow' : 'text-white/50 hover:text-white'
-              }`}
-              title="Detailed Showcase"
-            >
-              <FaThLarge className="text-[10px]" />
-              <span>Showcase</span>
-            </button>
-          </div>
-
+        <div className="flex items-center gap-3 text-xs text-zinc-400 font-mono">
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+            <FaLightbulb className="text-amber-400 text-xs" />
+            <span>Interactive Secrets Available</span>
+          </span>
         </div>
       </div>
 
-      {/* GALLERY DISPLAY */}
-      {viewLayout === 'fit' ? (
-        
-        /* 4-COLUMN COMPACT VIEW - FITS CLEANLY ON ONE SCREEN! */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <AnimatePresence mode="popLayout">
-            {filteredArtworks.map((artwork, idx) => {
-              const isHovered = hoveredId === artwork.id;
-              const isLensHere = lensPos.show && lensPos.artworkId === artwork.id;
+      {/* Artwork Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <AnimatePresence mode="popLayout">
+          {filteredArtworks.map((artwork, idx) => {
+            const isHovered = hoveredId === artwork.id;
+            const hasGlow = mousePos.id === artwork.id;
+            const currentLikes = likes[artwork.id] || 0;
 
-              return (
-                <motion.div
-                  key={artwork.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3, delay: idx * 0.05 }}
-                  onMouseEnter={() => {
-                    setHoveredId(artwork.id);
-                    triggerAudioClick();
-                  }}
-                  onMouseLeave={() => {
-                    setHoveredId(null);
-                    handleMouseLeave();
-                  }}
-                  className="group relative rounded-xl bg-[#09090c] border border-white/10 overflow-hidden shadow-xl transition-all duration-300 hover:border-white/30"
-                  style={{
-                    boxShadow: isHovered 
-                      ? `${shadowX}px ${shadowY}px 30px rgba(255,255,255,0.12)` 
-                      : '0 8px 24px rgba(0,0,0,0.6)'
-                  }}
-                >
+            return (
+              <motion.article
+                key={artwork.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.35, delay: idx * 0.05 }}
+                onMouseEnter={() => setHoveredId(artwork.id)}
+                onMouseLeave={() => {
+                  setHoveredId(null);
+                  setMousePos({ x: 0, y: 0, id: null });
+                }}
+                onMouseMove={(e) => handleMouseMove(e, artwork.id)}
+                onClick={() => onSelectArtwork(artwork)}
+                className="group relative rounded-2xl bg-[#0b0b0f] border border-white/10 overflow-hidden shadow-xl hover:border-white/30 transition-all duration-300 flex flex-col cursor-pointer"
+              >
+                
+                {/* Image Frame with Interactive Graphite Shine */}
+                <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#050508] flex items-center justify-center p-4 sm:p-5">
                   
-                  {/* Image Container with compact height */}
-                  <div
-                    onClick={() => {
-                      triggerAudioClick();
-                      onSelectArtwork(artwork);
-                    }}
-                    onMouseMove={(e) => handleMouseMove(e, artwork)}
-                    onMouseLeave={handleMouseLeave}
-                    className="relative h-[280px] w-full overflow-hidden bg-black cursor-pointer flex items-center justify-center p-2"
-                  >
+                  <div className="relative w-full h-full flex items-center justify-center rounded-xl overflow-hidden bg-black shadow-inner">
                     <img
                       src={artwork.image}
                       alt={artwork.title}
-                      className={`max-h-full w-auto max-w-full object-contain transition-transform duration-300 ${
-                        isHovered ? 'scale-105' : 'scale-100'
+                      loading="lazy"
+                      className={`max-h-full max-w-full object-contain transition-transform duration-500 ease-out select-none ${
+                        isHovered ? 'scale-[1.03]' : 'scale-100'
                       }`}
                     />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-20 transition-opacity" />
-
-                    {/* Glass Loupe Lens */}
-                    {isLensHere && (
+                    {/* Interactive Graphite Shine Simulation (Follows Mouse Cursor!) */}
+                    {hasGlow && (
                       <div
-                        className="pointer-events-none absolute w-36 h-36 rounded-full border-2 border-white/80 shadow-[0_0_20px_rgba(0,0,0,0.9)] overflow-hidden z-30"
+                        className="pointer-events-none absolute inset-0 mix-blend-overlay transition-opacity duration-150"
                         style={{
-                          left: lensPos.x - 72,
-                          top: lensPos.y - 72,
-                          backgroundImage: `url(${artwork.image})`,
-                          backgroundPosition: `${lensPos.percentX}% ${lensPos.percentY}%`,
-                          backgroundSize: '280%',
-                          backgroundColor: '#000'
+                          background: `radial-gradient(circle 180px at ${mousePos.x}% ${mousePos.y}%, rgba(255, 255, 255, 0.45) 0%, transparent 80%)`,
                         }}
-                      >
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="w-full h-[1px] bg-white/30" />
-                          <div className="h-full w-[1px] bg-white/30 absolute" />
-                          <span className="absolute bottom-1.5 text-[8px] font-mono text-white bg-black/80 border border-white/20 px-1.5 py-0.5 rounded-full">
-                            2.5x
-                          </span>
-                        </div>
-                      </div>
+                      />
                     )}
 
-                    {/* Hover Overlay Button */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/30 backdrop-blur-[1px]">
-                      <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-black font-mono font-bold text-[11px] shadow-lg transform translate-y-1 group-hover:translate-y-0 transition-transform">
-                        <FaExpand className="text-[10px]" />
-                        <span>Inspect</span>
-                      </div>
+                    {/* Subtle vignette */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-50 group-hover:opacity-20 transition-opacity" />
+
+                    {/* Hover Inspect CTA */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/40 backdrop-blur-[2px]">
+                      <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black font-semibold text-xs shadow-2xl transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                        <FaSearchPlus className="text-xs" />
+                        <span>Inspect Secrets &amp; Zoom</span>
+                      </span>
+                    </div>
+
+                    {/* Quick Metadata Badges */}
+                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-black/75 border border-white/15 text-[10px] font-mono text-zinc-300 backdrop-blur-md">
+                      {artwork.year}
+                    </div>
+
+                    <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/75 border border-white/15 text-[10px] font-mono text-zinc-300 backdrop-blur-md">
+                      <FaClock className="text-[9px] text-zinc-400" />
+                      <span>{artwork.timeSpent.split(' ')[0]} hrs</span>
                     </div>
 
                   </div>
 
-                  {/* Compact Info Footer */}
-                  <div className="p-3.5 bg-[#08080b] border-t border-white/5 space-y-1">
+                </div>
+
+                {/* Card Story & Content */}
+                <div className="p-5 flex-1 flex flex-col justify-between bg-[#0b0b0f] border-t border-white/10 space-y-4">
+                  
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold font-mono text-white truncate group-hover:text-zinc-200">
-                        {artwork.title}
-                      </h3>
-                      <span className="text-[10px] font-mono text-white/40">{artwork.timeSpent}</span>
-                    </div>
-
-                    <p className="text-[11px] font-mono text-white/50 truncate">
-                      {artwork.medium}
-                    </p>
-
-                    <div className="flex items-center justify-between pt-1 text-[10px] font-mono text-white/40">
-                      <span>{artwork.year}</span>
-                      <button
-                        onClick={() => {
-                          triggerAudioClick();
-                          onSelectArtwork(artwork);
-                        }}
-                        className="text-white hover:underline font-bold"
-                      >
-                        Inspect →
-                      </button>
-                    </div>
-                  </div>
-
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
-
-      ) : (
-
-        /* 2-COLUMN SHOWCASE VIEW */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <AnimatePresence mode="popLayout">
-            {filteredArtworks.map((artwork, idx) => {
-              const isHovered = hoveredId === artwork.id;
-              const isLensHere = lensPos.show && lensPos.artworkId === artwork.id;
-
-              return (
-                <motion.div
-                  key={artwork.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.35, delay: idx * 0.06 }}
-                  onMouseEnter={() => {
-                    setHoveredId(artwork.id);
-                    triggerAudioClick();
-                  }}
-                  onMouseLeave={() => {
-                    setHoveredId(null);
-                    handleMouseLeave();
-                  }}
-                  className="group relative rounded-2xl bg-[#09090c] border border-white/10 overflow-hidden shadow-2xl transition-all duration-300 hover:border-white/30"
-                  style={{
-                    boxShadow: isHovered 
-                      ? `${shadowX}px ${shadowY}px 36px rgba(255,255,255,0.12)` 
-                      : '0 10px 30px rgba(0,0,0,0.6)'
-                  }}
-                >
-
-                  <div className="p-4 flex items-center justify-between border-b border-white/10 bg-white/[0.02]">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
-                      <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+                      <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
                         {artwork.category}
                       </span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs font-mono text-white/40">
-                      <span className="flex items-center gap-1">
-                        <FaClock className="text-[10px]" /> {artwork.timeSpent}
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 font-mono">
+                        {artwork.hotspots?.length || 3} Behind-the-Scenes Notes
                       </span>
-                      <span>•</span>
-                      <span>{artwork.year}</span>
-                    </div>
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      triggerAudioClick();
-                      onSelectArtwork(artwork);
-                    }}
-                    onMouseMove={(e) => handleMouseMove(e, artwork)}
-                    onMouseLeave={handleMouseLeave}
-                    className="relative h-[380px] w-full overflow-hidden bg-black cursor-pointer flex items-center justify-center p-3"
-                  >
-                    <img
-                      src={artwork.image}
-                      alt={artwork.title}
-                      className={`max-h-full w-auto max-w-full object-contain transition-transform duration-500 ${
-                        isHovered ? 'scale-105' : 'scale-100'
-                      }`}
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70 group-hover:opacity-40 transition-opacity" />
-
-                    {isLensHere && (
-                      <div
-                        className="pointer-events-none absolute w-44 h-44 rounded-full border-2 border-white/80 shadow-[0_0_24px_rgba(0,0,0,0.9)] overflow-hidden z-30"
-                        style={{
-                          left: lensPos.x - 88,
-                          top: lensPos.y - 88,
-                          backgroundImage: `url(${artwork.image})`,
-                          backgroundPosition: `${lensPos.percentX}% ${lensPos.percentY}%`,
-                          backgroundSize: '280%',
-                          backgroundColor: '#000'
-                        }}
-                      >
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="w-full h-[1px] bg-white/30" />
-                          <div className="h-full w-[1px] bg-white/30 absolute" />
-                          <span className="absolute bottom-2 text-[9px] font-mono text-white bg-black/80 border border-white/20 px-2 py-0.5 rounded-full">
-                            2.5x
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/30 backdrop-blur-[2px]">
-                      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black font-mono font-bold text-xs shadow-xl transform translate-y-2 group-hover:translate-y-0 transition-transform duration-200">
-                        <FaExpand className="text-xs" />
-                        <span>Inspect</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-5 space-y-3 bg-[#08080b]">
-                    <div>
-                      <h3 className="text-lg font-bold font-mono text-white group-hover:text-zinc-200 transition-colors">
-                        {artwork.title}
-                      </h3>
-                      <p className="text-xs font-mono text-white/50 mt-0.5">
-                        {artwork.medium}
-                      </p>
                     </div>
 
-                    <p className="text-xs text-zinc-400 font-mono leading-relaxed">
-                      {artwork.description}
+                    <h3 className="text-xl font-bold text-white group-hover:text-zinc-200 transition-colors">
+                      {artwork.title}
+                    </h3>
+
+                    <p className="text-xs font-mono text-zinc-400">
+                      {artwork.medium}
                     </p>
-
-                    <div className="space-y-1 pt-2 border-t border-white/5">
-                      {artwork.details.slice(0, 2).map((detail, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-[11px] font-mono text-white/60">
-                          <FaCheck className="text-white/60 text-[9px] shrink-0" />
-                          <span>{detail}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center justify-between pt-3 text-[11px] font-mono border-t border-white/5">
-                      <span className="text-white/40">Artist: <strong className="text-white">{artwork.artist}</strong></span>
-                      <button
-                        onClick={() => {
-                          triggerAudioClick();
-                          onSelectArtwork(artwork);
-                        }}
-                        className="text-white/80 hover:text-white font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform"
-                      >
-                        <span>Inspect</span> →
-                      </button>
-                    </div>
                   </div>
 
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
+                  {/* Story excerpt */}
+                  <p className="text-xs text-zinc-300 leading-relaxed line-clamp-2">
+                    &ldquo;{artwork.story}&rdquo;
+                  </p>
 
-      )}
+                  {/* Bottom Footer: Like Button & Inspect Link */}
+                  <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                    
+                    {/* Visitor Reaction Button */}
+                    <button
+                      onClick={(e) => handleLike(e, artwork.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 text-zinc-300 hover:text-white transition-all cursor-pointer group/like"
+                      title="Give this artwork some love"
+                    >
+                      <FaHeart className="text-rose-500 group-hover/like:scale-125 transition-transform" />
+                      <span className="font-mono text-[11px] font-medium">{currentLikes}</span>
+                    </button>
+
+                    <span className="inline-flex items-center gap-1.5 font-medium text-white group-hover:translate-x-1 transition-transform">
+                      <span>Explore</span> &rarr;
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </motion.article>
+            );
+          })}
+        </AnimatePresence>
+      </div>
 
     </section>
   );

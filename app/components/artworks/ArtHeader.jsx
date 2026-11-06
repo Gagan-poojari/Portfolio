@@ -1,15 +1,9 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FaArrowLeft, FaVolumeMute, FaVolumeUp, FaSearchPlus, FaPaintBrush } from 'react-icons/fa';
+import { FaArrowLeft, FaPencilAlt } from 'react-icons/fa';
 
-export default function ArtHeader({ 
-  audioEnabled, 
-  setAudioEnabled,
-  magnifierActive,
-  setMagnifierActive,
-  onOpenSandbox
-}) {
+export default function ArtHeader({ onOpenSandbox }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -22,72 +16,44 @@ export default function ArtHeader({
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 font-body ${
         scrolled 
-          ? 'bg-[#09090b]/90 backdrop-blur-md border-b border-white/10 py-3 shadow-xl' 
-          : 'bg-gradient-to-b from-black/80 to-transparent py-4'
+          ? 'bg-[#08080b]/90 backdrop-blur-md border-b border-white/10 py-3.5 shadow-2xl' 
+          : 'bg-gradient-to-b from-black/80 to-transparent py-5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         
-        {/* Left: Back Link & Title */}
+        {/* Left: Back Link & Gallery Identifier */}
         <div className="flex items-center gap-4 sm:gap-6">
           <Link
             href="/"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/15 text-xs text-white/80 hover:text-white transition-all font-mono group"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-all group"
           >
-            <FaArrowLeft className="text-[10px] group-hover:-translate-x-1 transition-transform" />
-            <span className="hidden sm:inline">Portfolio</span>
+            <FaArrowLeft className="text-[10px] group-hover:-translate-x-0.5 transition-transform" />
+            <span>Back to Portfolio</span>
           </Link>
 
-          <div className="flex items-center gap-2.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-white/80"></span>
-            <h1 className="text-sm font-bold tracking-widest text-white uppercase font-mono">
-              Gagan <span className="text-white/40 font-light">•</span> Art
-            </h1>
+          <div className="hidden sm:flex items-center gap-3 border-l border-white/15 pl-5">
+            <span className="text-xs uppercase tracking-widest text-zinc-300 font-mono font-medium">
+              Gagan&apos;s Sketchbook
+            </span>
+            <span className="text-zinc-600">&bull;</span>
+            <span className="text-xs text-zinc-400">
+              100% Pencil &amp; Charcoal on Paper
+            </span>
           </div>
         </div>
 
-        {/* Right: Controls & Toggles */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          
-          {/* Lens Toggle */}
-          <button
-            onClick={() => setMagnifierActive(!magnifierActive)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono transition-all ${
-              magnifierActive
-                ? 'border-white/40 bg-white/15 text-white font-bold'
-                : 'border-white/10 bg-white/5 text-white/50 hover:text-white hover:bg-white/10'
-            }`}
-            title="Toggle magnifying glass"
-          >
-            <FaSearchPlus className="text-xs" />
-            <span className="hidden md:inline">Lens</span>
-            {magnifierActive && <span className="text-[9px] px-1 bg-white/20 rounded">ON</span>}
-          </button>
-
-          {/* Sound Toggle */}
-          <button
-            onClick={() => setAudioEnabled(!audioEnabled)}
-            className={`p-2 rounded-full border text-xs font-mono transition-all ${
-              audioEnabled
-                ? 'border-white/40 bg-white/15 text-white'
-                : 'border-white/10 bg-white/5 text-white/40 hover:text-white hover:bg-white/10'
-            }`}
-            title={audioEnabled ? "Mute sound" : "Enable sound"}
-          >
-            {audioEnabled ? <FaVolumeUp className="text-white" /> : <FaVolumeMute />}
-          </button>
-
-          {/* Canvas Button */}
+        {/* Right: Actions */}
+        <div className="flex items-center gap-3">
           <button
             onClick={onOpenSandbox}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-black font-bold text-xs font-mono hover:bg-zinc-200 transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black font-medium text-xs transition-all shadow-sm cursor-pointer"
           >
-            <FaPaintBrush className="text-xs" />
-            <span>Sketchpad</span>
+            <FaPencilAlt className="text-[10px]" />
+            <span>Visitor Sketchpad</span>
           </button>
-
         </div>
 
       </div>

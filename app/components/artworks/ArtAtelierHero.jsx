@@ -1,89 +1,14 @@
 'use client';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { FaPencilAlt } from 'react-icons/fa';
+import { FaDice, FaPencilAlt, FaFire } from 'react-icons/fa';
 
-export default function ArtAtelierHero({ activeCategory, setActiveCategory }) {
-  const canvasRef = useRef(null);
-
-  // Subtle Ambient Particle System
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let animationFrameId;
-
-    let width = (canvas.width = canvas.parentElement.clientWidth);
-    let height = (canvas.height = canvas.parentElement.clientHeight);
-
-    const handleResize = () => {
-      if (!canvas.parentElement) return;
-      width = canvas.width = canvas.parentElement.clientWidth;
-      height = canvas.height = canvas.parentElement.clientHeight;
-    };
-    window.addEventListener('resize', handleResize);
-
-    const particleCount = 45;
-    const particles = Array.from({ length: particleCount }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      radius: Math.random() * 1.2 + 0.3,
-      alpha: Math.random() * 0.4 + 0.1,
-      vx: (Math.random() - 0.5) * 0.2,
-      vy: (Math.random() - 0.5) * 0.2,
-      pulse: Math.random() * 0.02 + 0.005,
-    }));
-
-    let mouseX = width / 2;
-    let mouseY = height / 2;
-
-    const handleMouseMove = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      mouseX = e.clientX - rect.left;
-      mouseY = e.clientY - rect.top;
-    };
-    canvas.addEventListener('mousemove', handleMouseMove);
-
-    const render = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      // Warm natural museum spotlight glow
-      const gradient = ctx.createRadialGradient(mouseX, mouseY, 5, mouseX, mouseY, 350);
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.04)');
-      gradient.addColorStop(1, 'transparent');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
-
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        if (p.x < 0) p.x = width;
-        if (p.x > width) p.x = 0;
-        if (p.y < 0) p.y = height;
-        if (p.y > height) p.y = 0;
-
-        p.alpha += Math.sin(Date.now() * p.pulse) * 0.008;
-        const clampedAlpha = Math.max(0.1, Math.min(0.5, p.alpha));
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${clampedAlpha})`;
-        ctx.fill();
-      });
-
-      animationFrameId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
-      canvas.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
-
+export default function ArtAtelierHero({ 
+  activeCategory, 
+  setActiveCategory, 
+  onSurpriseMe, 
+  onOpenSandbox 
+}) {
   const categories = [
     { id: 'all', label: 'All Works' },
     { id: 'portrait', label: 'Portraits' },
@@ -92,73 +17,88 @@ export default function ArtAtelierHero({ activeCategory, setActiveCategory }) {
   ];
 
   return (
-    <section className="relative min-h-[58vh] flex flex-col justify-center items-center pt-28 pb-12 px-4 overflow-hidden border-b border-white/10">
+    <section className="relative pt-32 sm:pt-40 pb-16 px-4 sm:px-6 lg:px-8 border-b border-white/10 overflow-hidden font-body">
       
-      {/* Background Canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-auto z-0" />
+      {/* Subtle organic studio vignette */}
+      <div 
+        className="pointer-events-none absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 50% 15%, rgba(255, 255, 255, 0.08) 0%, transparent 55%),
+            radial-gradient(circle at 85% 85%, rgba(199, 6, 28, 0.04) 0%, transparent 40%),
+            radial-gradient(circle at 15% 85%, rgba(41, 123, 201, 0.04) 0%, transparent 40%)
+          `
+        }}
+      />
 
-      <div className="relative z-10 max-w-4xl text-center space-y-6">
-
-        {/* Minimalist Subtitle Pill */}
+      <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
+        
+        {/* Human Badge */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-white/15 bg-white/5 text-white/70 text-xs font-mono tracking-widest uppercase"
+          transition={{ duration: 0.4 }}
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm text-xs font-mono text-zinc-300"
         >
-          <FaPencilAlt className="text-white/80 text-[10px]" />
-          <span>Gagan Poojari - Sketches & Drawings</span>
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>0% Prompts &bull; 100% Pencils &amp; Smudged Fingers</span>
         </motion.div>
 
-        {/* Heading */}
-        <motion.h1
-          initial={{ opacity: 0, y: 15 }}
+        {/* Hero Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-none font-mono uppercase"
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="space-y-3"
         >
-          Graphite <span className="text-white/40 font-light">&</span> Charcoal
-        </motion.h1>
+          <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl tracking-wider text-white uppercase leading-[0.95]">
+            Drawn By Hand.
+          </h1>
+          <p className="font-display text-2xl sm:text-3xl text-zinc-400 tracking-wide uppercase">
+            Charcoal, Graphite &amp; 140+ Hours of Pure Focus
+          </p>
+        </motion.div>
 
-        {/* Subtext */}
+        {/* Human Subtitle */}
         <motion.p
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-xl mx-auto text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed"
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="max-w-2xl mx-auto text-sm sm:text-base text-zinc-300 leading-relaxed font-normal"
         >
-          A curated collection of hand-drawn graphite portraits and charcoal studies. Built with focus, precision, and heavy shadow depth.
+          I build software by day and sketch with pencils by night. In a world where AI creates images in 3 seconds, these are 5 pieces that took 30+ hours of squinting at paper with an 8B pencil, blending with tortillons, and rubbing charcoal on my jeans.
         </motion.p>
 
-        {/* Stats Row */}
+        {/* Quick Action Pills for Visitors */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto pt-2"
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="flex flex-wrap items-center justify-center gap-3 pt-2"
         >
-          {[
-            { value: '120+', label: 'Hours' },
-            { value: '5+', label: 'Original Works' },
-            { value: 'HB-10B', label: 'Graphite Range' },
-            { value: 'A3 & A4', label: 'Format' },
-          ].map((stat, i) => (
-            <div
-              key={i}
-              className="p-3 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-sm flex flex-col items-center hover:border-white/20 transition-colors"
-            >
-              <span className="text-lg font-bold font-mono text-white">{stat.value}</span>
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">{stat.label}</span>
-            </div>
-          ))}
+          <button
+            onClick={onSurpriseMe}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium transition-all shadow-sm cursor-pointer"
+          >
+            <FaDice className="text-sm text-amber-400" />
+            <span>Surprise Me (Random Pick)</span>
+          </button>
+
+          <button
+            onClick={onOpenSandbox}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-semibold transition-all shadow-md cursor-pointer"
+          >
+            <FaPencilAlt className="text-xs" />
+            <span>Doodle in my Sketchpad</span>
+          </button>
         </motion.div>
 
-        {/* Category Pill Filters */}
+        {/* Category Tabs */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="flex flex-wrap items-center justify-center gap-2 pt-3"
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="flex flex-wrap items-center justify-center gap-2 pt-4"
         >
           {categories.map((cat) => {
             const active = activeCategory === cat.id;
@@ -166,10 +106,10 @@ export default function ArtAtelierHero({ activeCategory, setActiveCategory }) {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-1 rounded-full text-xs font-mono transition-all duration-200 ${
+                className={`px-4 py-1.5 rounded-full text-xs transition-all duration-200 cursor-pointer ${
                   active
-                    ? 'bg-white text-black font-bold shadow-sm'
-                    : 'bg-white/5 text-white/50 hover:text-white hover:bg-white/10 border border-white/10'
+                    ? 'bg-white text-black font-semibold shadow-sm'
+                    : 'bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/10 border border-white/10'
                 }`}
               >
                 {cat.label}

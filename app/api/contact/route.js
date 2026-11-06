@@ -10,6 +10,72 @@ function getEmailJsConfig() {
   };
 }
 
+// Upload base64 sketch to a reliable image host so the recipient gets a clean direct image link
+// instead of pages of unreadable raw base64 characters.
+async function uploadSketchImage(base64Data) {
+  try {
+    const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    let mimeType = 'image/png';
+    let rawBase64 = base64Data;
+    if (matches && matches.length === 3) {
+      mimeType = matches[1];
+      rawBase64 = matches[2];
+    }
+
+    const buffer = Buffer.from(rawBase64, 'base64');
+    const ext = mimeType.includes('jpeg') || mimeType.includes('jpg') ? 'jpg' : 'png';
+    const filename = `sketch-${Date.now()}.${ext}`;
+
+    // Primary: uguu.se
+    try {
+      const formData = new FormData();
+      const blob = new Blob([buffer], { type: mimeType });
+      formData.append('files[]', blob, filename);
+
+      const res = await fetch('https://uguu.se/upload', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'User-Agent': 'Portfolio-App/1.0',
+        },
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.files?.[0]?.url) {
+          return json.files[0].url;
+        }
+      }
+    } catch (e) {
+      console.warn('Uguu upload failed, trying fallback host:', e);
+    }
+
+    // Fallback: tmpfiles.org
+    try {
+      const formData = new FormData();
+      const blob = new Blob([buffer], { type: mimeType });
+      formData.append('file', blob, filename);
+
+      const res = await fetch('https://tmpfiles.org/api/v1/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.data?.url) {
+          return json.data.url;
+        }
+      }
+    } catch (e) {
+      console.warn('Fallback upload failed:', e);
+    }
+  } catch (err) {
+    console.error('Error processing sketch image buffer:', err);
+  }
+  return null;
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -41,8 +107,16 @@ export async function POST(request) {
     });
 
     let formattedMessage = message;
+    let sketchUrl = null;
+
     if (sketch_data) {
-      formattedMessage = `${message}\n\n🎨 [DRAWN SKETCH DATA preview]:\n${sketch_data}`;
+      sketchUrl = await uploadSketchImage(sketch_data);
+
+      if (sketchUrl) {
+        formattedMessage = `${message ? message + '\n\n' : ''}──────────────────────────────\n🎨 VISITOR SKETCH ATTACHED:\n👉 View & Download Drawing: ${sketchUrl}\n──────────────────────────────`;
+      } else {
+        formattedMessage = `${message ? message + '\n\n' : ''}[Visitor drew a sketch on the Atelier canvas, but the remote image link could not be generated.]`;
+      }
     }
 
     const templateParams = {
@@ -51,10 +125,11 @@ export async function POST(request) {
       name: from_name,
       email: from_email,
       message: formattedMessage,
-      sketch_image: sketch_data,
-      sketch_data: sketch_data,
+      sketch_url: sketchUrl || '',
+      sketch_link: sketchUrl || '',
+      sketch_image: sketchUrl || '',
       reply_to: from_email,
-      title: sketch_data ? `New Sketch & Message from ${from_name}` : `New message from ${from_name}`,
+      title: sketch_data ? `🎨 New Sketch & Note from ${from_name}` : `New message from ${from_name}`,
       time,
     };
 
@@ -75,7 +150,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to send message.' }, { status: 502 });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, sketch_url: sketchUrl });
   } catch (error) {
     console.error('Contact API error:', error);
     return NextResponse.json({ error: 'Failed to send message.' }, { status: 500 });
