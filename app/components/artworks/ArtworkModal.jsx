@@ -14,12 +14,21 @@ import {
   FaLightbulb,
   FaPenNib,
   FaEye,
-  FaInfoCircle
+  FaInfoCircle,
+  FaHeart,
+  FaRegHeart
 } from 'react-icons/fa';
 import SocialShareModal from './SocialShareModal';
 import { handleDownloadImage } from '../../artworks/downloadHelper';
+import { useArtworkLikes } from '../../artworks/useArtworkLikes';
 
-export default function ArtworkModal({ artwork, artworks = [], onSelectArtwork, onClose }) {
+export default function ArtworkModal({ artwork, artworks = [], onSelectArtwork, onClose, likeControls }) {
+  const fallbackLikes = useArtworkLikes();
+  const { isLiked, getLikeCount, toggleLike, justLikedId } = likeControls || fallbackLikes;
+  const userLiked = isLiked(artwork?.id);
+  const likeCount = getLikeCount(artwork?.id);
+  const justLiked = justLikedId === artwork?.id;
+
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -417,7 +426,41 @@ export default function ArtworkModal({ artwork, artworks = [], onSelectArtwork, 
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+              <div className="pt-4 border-t border-white/10 flex items-center gap-2.5">
+                {/* Like Button */}
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => toggleLike(artwork.id, e)}
+                  className={`relative flex items-center gap-2 px-3.5 py-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                    userLiked
+                      ? 'bg-rose-500/20 border-rose-500/50 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.3)]'
+                      : 'bg-white/5 hover:bg-white/10 border-white/15 text-zinc-300 hover:text-white'
+                  }`}
+                  title={userLiked ? 'Liked! Click to undo' : 'Leave a heart for this artwork'}
+                >
+                  <motion.div animate={justLiked ? { scale: [1, 1.45, 1] } : {}} transition={{ duration: 0.35 }}>
+                    {userLiked ? (
+                      <FaHeart className="text-rose-500 text-sm" />
+                    ) : (
+                      <FaRegHeart className="text-zinc-400 group-hover:text-rose-400 text-sm" />
+                    )}
+                  </motion.div>
+                  <span className="font-mono text-xs">{likeCount}</span>
+                  <AnimatePresence>
+                    {justLiked && (
+                      <motion.span
+                        initial={{ opacity: 0, y: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, y: -22, scale: 1.15 }}
+                        exit={{ opacity: 0, y: -30, scale: 0.9 }}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                        className="absolute -top-1 left-1/2 -translate-x-1/2 text-[10px] font-bold font-mono text-rose-400 pointer-events-none drop-shadow"
+                      >
+                        +1
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+
                 <button
                   onClick={() => handleDownloadImage(artwork.image, `${artwork.id}-gagan-poojari.webp`)}
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition-all shadow-md cursor-pointer"

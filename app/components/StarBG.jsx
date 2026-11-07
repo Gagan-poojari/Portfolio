@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 function cn(...classes) {
@@ -8,15 +8,20 @@ function cn(...classes) {
 }
 
 // ─── WebGL canvas star field ───────────────────────────────────────────────
-function StarCanvas() {
+function StarCanvas({ active }) {
   const canvasRef = useRef(null);
   const frameRef  = useRef(null);
 
   useEffect(() => {
+    if (!active) {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) return; // fallback to CSS if WebGL unavailable
+    if (!gl) return;
 
     // ── shaders ──
     const vsSource = `
@@ -74,21 +79,22 @@ function StarCanvas() {
     let starCount = 0;
 
     function initStars() {
+      if (!canvas) return;
       W = canvas.width = canvas.offsetWidth;
       H = canvas.height = canvas.offsetHeight;
-      starCount = Math.floor((W * H) / 900);
+      starCount = Math.min(600, Math.floor((W * H) / 1400));
       const data = new Float32Array(starCount * 7);
 
       for (let i = 0; i < starCount; i++) {
         const x = Math.random() * W;
         const y = Math.random() * H;
-        const size = Math.random() < 0.07 ? 2.8 + Math.random() * 1.4
-             : Math.random() < 0.25 ? 1.8 + Math.random() * 0.8
-             : 0.8 + Math.random() * 0.8;
+        const size = Math.random() < 0.07 ? 2.5 + Math.random() * 1.2
+             : Math.random() < 0.25 ? 1.6 + Math.random() * 0.6
+             : 0.8 + Math.random() * 0.6;
         const baseBri = 0.35 + Math.random() * 0.65;
-        const twinkleSpeed = 0.4 + Math.random() * 2.2;
+        const twinkleSpeed = 0.4 + Math.random() * 2.0;
         const twinklePhase = Math.random() * Math.PI * 2;
-        const twinkleAmp = 0.08 + Math.random() * 0.28;
+        const twinkleAmp = 0.08 + Math.random() * 0.25;
 
         const idx = i * 7;
         data[idx]     = x;
@@ -124,7 +130,7 @@ function StarCanvas() {
       if (starCount > 0 && starBuffer) {
         gl.bindBuffer(gl.ARRAY_BUFFER, starBuffer);
 
-        const stride = 7 * 4; // 7 floats, 4 bytes each
+        const stride = 7 * 4;
 
         gl.enableVertexAttribArray(aPos);
         gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, stride, 0);
@@ -156,36 +162,42 @@ function StarCanvas() {
     render();
 
     return () => {
-      cancelAnimationFrame(frameRef.current);
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
       window.removeEventListener('resize', initStars);
       if (starBuffer) gl.deleteBuffer(starBuffer);
       gl.deleteProgram(prog);
       gl.deleteShader(vsShader);
       gl.deleteShader(fsShader);
     };
-  }, []);
+  }, [active]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
+      className="absolute inset-0 w-full h-full pointer-events-none"
       style={{ display: 'block' }}
     />
   );
 }
 
 // ─── shooting stars (Canvas 2D) ───────────────────────────────────────────
-function ShootingStars() {
+function ShootingStars({ active }) {
   const canvasRef = useRef(null);
   const frameRef  = useRef(null);
 
   useEffect(() => {
+    if (!active) {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let W, H;
 
     function resize() {
+      if (!canvas) return;
       W = canvas.width  = canvas.offsetWidth;
       H = canvas.height = canvas.offsetHeight;
     }
@@ -198,23 +210,24 @@ function ShootingStars() {
     function render(ts) {
       ctx.clearRect(0, 0, W, H);
 
-      if (ts - lastSpawn > (3500 + Math.random() * 5000)) {
+      if (ts - lastSpawn > (4000 + Math.random() * 5000)) {
         shooters.push({
           x: Math.random() * W * 1.4,
           y: -10,
           vx: -(4 + Math.random() * 5),
           vy: 2 + Math.random() * 3.5,
           life: 1,
-          length: 90 + Math.random() * 130,
+          length: 80 + Math.random() * 100,
         });
         lastSpawn = ts;
       }
 
       shooters = shooters.filter(s => s.life > 0);
-      for (const s of shooters) {
+      for (let i = 0; i < shooters.length; i++) {
+        const s = shooters[i];
         s.x += s.vx;
         s.y += s.vy;
-        s.life -= 0.014;
+        s.life -= 0.016;
 
         const alpha = s.life * 0.85;
         const tailX = s.x - (s.vx / Math.hypot(s.vx, s.vy)) * s.length;
@@ -222,19 +235,18 @@ function ShootingStars() {
 
         const grad = ctx.createLinearGradient(tailX, tailY, s.x, s.y);
         grad.addColorStop(0, `rgba(255,255,255,0)`);
-        grad.addColorStop(0.6, `rgba(180,210,255,${alpha * 0.5})`);
+        grad.addColorStop(0.6, `rgba(180,210,255,${alpha * 0.4})`);
         grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
 
         ctx.beginPath();
         ctx.moveTo(tailX, tailY);
         ctx.lineTo(s.x, s.y);
         ctx.strokeStyle = grad;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.2;
         ctx.stroke();
 
-        // tip glow
         ctx.beginPath();
-        ctx.arc(s.x, s.y, 2, 0, Math.PI * 2);
+        ctx.arc(s.x, s.y, 1.8, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255,255,255,${alpha})`;
         ctx.fill();
       }
@@ -244,10 +256,10 @@ function ShootingStars() {
 
     frameRef.current = requestAnimationFrame(render);
     return () => {
-      cancelAnimationFrame(frameRef.current);
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
       window.removeEventListener('resize', resize);
     };
-  }, []);
+  }, [active]);
 
   return (
     <canvas
@@ -262,34 +274,22 @@ function ShootingStars() {
 function NebulaLayer() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {/* Deep blue cluster */}
       <div
-        className="absolute rounded-full opacity-[0.07]"
+        className="absolute rounded-full opacity-[0.06]"
         style={{
           width: '60vw', height: '50vh',
           top: '10%', left: '-10%',
           background: 'radial-gradient(ellipse, #297bc9 0%, transparent 70%)',
-          filter: 'blur(60px)',
+          filter: 'blur(50px)',
         }}
       />
-      {/* Red cluster */}
       <div
-        className="absolute rounded-full opacity-[0.06]"
+        className="absolute rounded-full opacity-[0.05]"
         style={{
           width: '50vw', height: '45vh',
           top: '5%', right: '-5%',
           background: 'radial-gradient(ellipse, #c7061c 0%, transparent 70%)',
-          filter: 'blur(70px)',
-        }}
-      />
-      {/* Center pale blue depth */}
-      <div
-        className="absolute rounded-full opacity-[0.04]"
-        style={{
-          width: '40vw', height: '40vh',
-          top: '30%', left: '30%',
-          background: 'radial-gradient(ellipse, #a0c4f0 0%, transparent 60%)',
-          filter: 'blur(80px)',
+          filter: 'blur(50px)',
         }}
       />
     </div>
@@ -306,20 +306,40 @@ function StarsBackground({
   starColor = '#fff',
   ...props
 }) {
+  const containerRef = useRef(null);
+  const [isInView, setIsInView] = useState(false);
+
   const offsetX = useMotionValue(0);
   const offsetY = useMotionValue(0);
   const springX = useSpring(offsetX, transition);
   const springY = useSpring(offsetY, transition);
 
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { threshold: 0, rootMargin: '150px' }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const handleMouseMove = useCallback((e) => {
+    if (!isInView) return;
     const cx = window.innerWidth / 2;
     const cy = window.innerHeight / 2;
     offsetX.set(-(e.clientX - cx) * factor);
     offsetY.set(-(e.clientY - cy) * factor);
-  }, [offsetX, offsetY, factor]);
+  }, [offsetX, offsetY, factor, isInView]);
 
   return (
     <div
+      ref={containerRef}
       className={cn(
         'relative w-full h-full overflow-hidden',
         className
@@ -328,21 +348,17 @@ function StarsBackground({
       onMouseMove={handleMouseMove}
       {...props}
     >
-      {/* Nebula behind stars */}
       <NebulaLayer />
 
-      {/* Stars - parallax wrapper */}
       <motion.div
         className={cn('absolute inset-0', pointerEvents ? '' : 'pointer-events-none')}
         style={{ x: springX, y: springY }}
       >
-        <StarCanvas />
+        <StarCanvas active={isInView} />
       </motion.div>
 
-      {/* Shooting stars - no parallax, full screen */}
-      <ShootingStars />
+      <ShootingStars active={isInView} />
 
-      {/* Content */}
       <div className="relative z-10 w-full h-full">
         {children}
       </div>

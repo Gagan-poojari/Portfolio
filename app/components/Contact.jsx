@@ -63,13 +63,17 @@ const STATUS_MAP = {
 /* ─────────────────────────────────────────────
    PARTICLE CANVAS
 ───────────────────────────────────────────── */
-function ParticleCanvas() {
+function ParticleCanvas({ active }) {
   const canvasRef = useRef(null);
   const mouse = useRef({ x: -9999, y: -9999 });
   const dots = useRef([]);
   const raf = useRef(null);
 
   useEffect(() => {
+    if (!active) {
+      if (raf.current) cancelAnimationFrame(raf.current);
+      return;
+    }
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -139,7 +143,7 @@ function ParticleCanvas() {
       canvas.parentElement?.removeEventListener('mousemove', onMove);
       canvas.parentElement?.removeEventListener('mouseleave', onLeave);
     };
-  }, []);
+  }, [active]);
 
   return (
     <canvas
@@ -506,7 +510,7 @@ const Contact = () => {
           justifyContent: 'center',
         }}
       >
-        <ParticleCanvas />
+        <ParticleCanvas active={inView} />
 
         {/* Grid bg */}
         <div style={{

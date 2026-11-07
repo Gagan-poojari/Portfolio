@@ -8,12 +8,14 @@ import ArtAtelierHero from '../components/artworks/ArtAtelierHero';
 import ArtGallery from '../components/artworks/ArtGallery';
 import ArtworkModal from '../components/artworks/ArtworkModal';
 import DrawingSandbox from '../components/artworks/DrawingSandbox';
+import { useArtworkLikes } from './useArtworkLikes';
 import { FaPencilAlt, FaArrowLeft, FaCoffee, FaCode, FaEnvelope } from 'react-icons/fa';
 
 export default function ArtworksPage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [selectedArtwork, setSelectedArtwork] = useState(null);
   const [sandboxOpen, setSandboxOpen] = useState(false);
+  const likeControls = useArtworkLikes();
 
   const handleSurpriseMe = () => {
     const randomIndex = Math.floor(Math.random() * ARTWORKS_DATA.length);
@@ -39,6 +41,7 @@ export default function ArtworksPage() {
         artworks={ARTWORKS_DATA}
         activeCategory={activeCategory}
         onSelectArtwork={(art) => setSelectedArtwork(art)}
+        likeControls={likeControls}
       />
 
       {/* Real Talk: Behind the Pencils */}
@@ -123,6 +126,7 @@ export default function ArtworksPage() {
           artworks={ARTWORKS_DATA}
           onSelectArtwork={setSelectedArtwork}
           onClose={() => setSelectedArtwork(null)}
+          likeControls={likeControls}
         />
       )}
 

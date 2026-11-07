@@ -95,7 +95,10 @@ function highlightElement(el) {
 
 function scrollToSection(sectionId) {
   const el = document.getElementById(sectionId);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!el) return;
+  const navH = 80;
+  const targetY = el.getBoundingClientRect().top + window.pageYOffset - navH;
+  window.scrollTo({ top: targetY, behavior: 'smooth' });
 }
 
 // ─── HIGHLIGHT MATCH ──────────────────────────────────────────────────────────

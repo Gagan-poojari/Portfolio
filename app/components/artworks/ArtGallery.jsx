@@ -1,46 +1,20 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaClock, FaFire, FaHeart, FaSearchPlus, FaLightbulb } from 'react-icons/fa';
+import { FaClock, FaHeart, FaRegHeart, FaSearchPlus, FaLightbulb } from 'react-icons/fa';
+import { useArtworkLikes } from '../../artworks/useArtworkLikes';
 
 export default function ArtGallery({
   artworks,
   activeCategory,
-  onSelectArtwork
+  onSelectArtwork,
+  likeControls
 }) {
+  const fallbackLikes = useArtworkLikes();
+  const { isLiked, getLikeCount, toggleLike, justLikedId } = likeControls || fallbackLikes;
+
   const [hoveredId, setHoveredId] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0, id: null });
-  const [likes, setLikes] = useState({});
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('gagan_art_likes');
-      if (stored) {
-        setLikes(JSON.parse(stored));
-      } else {
-        // Base initial human likes so the community feel is warm
-        const initial = {
-          'ronaldo-goat': 42,
-          'paul-walker': 58,
-          'radha-krishna-eyes': 64,
-          'ronaldo-portrait': 37,
-          'falling-in-eyes': 29,
-        };
-        setLikes(initial);
-      }
-    } catch (e) {}
-  }, []);
-
-  const handleLike = (e, artId) => {
-    e.stopPropagation();
-    setLikes(prev => {
-      const next = { ...prev, [artId]: (prev[artId] || 0) + 1 };
-      try {
-        localStorage.setItem('gagan_art_likes', JSON.stringify(next));
-      } catch (err) {}
-      return next;
-    });
-  };
 
   const filteredArtworks = activeCategory === 'all'
     ? artworks
@@ -86,7 +60,9 @@ export default function ArtGallery({
           {filteredArtworks.map((artwork, idx) => {
             const isHovered = hoveredId === artwork.id;
             const hasGlow = mousePos.id === artwork.id;
-            const currentLikes = likes[artwork.id] || 0;
+            const userLiked = isLiked(artwork.id);
+            const count = getLikeCount(artwork.id);
+            const justLiked = justLikedId === artwork.id;
 
             return (
               <motion.article
@@ -184,15 +160,45 @@ export default function ArtGallery({
                   {/* Bottom Footer: Like Button & Inspect Link */}
                   <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
                     
-                    {/* Visitor Reaction Button */}
-                    <button
-                      onClick={(e) => handleLike(e, artwork.id)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 text-zinc-300 hover:text-white transition-all cursor-pointer group/like"
-                      title="Give this artwork some love"
+                    {/* Visitor Reaction Button with Live Like Counter */}
+                    <motion.button
+                      whileTap={{ scale: 0.88 }}
+                      onClick={(e) => toggleLike(artwork.id, e)}
+                      className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all cursor-pointer group/like ${
+                        userLiked
+                          ? 'bg-rose-500/15 border-rose-500/40 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                          : 'bg-white/5 hover:bg-white/15 border-white/10 text-zinc-300 hover:text-white'
+                      }`}
+                      title={userLiked ? 'Liked! Click to undo' : 'Leave a heart for this drawing'}
                     >
-                      <FaHeart className="text-rose-500 group-hover/like:scale-125 transition-transform" />
-                      <span className="font-mono text-[11px] font-medium">{currentLikes}</span>
-                    </button>
+                      <motion.div
+                        animate={justLiked ? { scale: [1, 1.45, 1] } : {}}
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                      >
+                        {userLiked ? (
+                          <FaHeart className="text-rose-500 text-xs" />
+                        ) : (
+                          <FaRegHeart className="text-zinc-400 group-hover/like:text-rose-400 text-xs transition-colors" />
+                        )}
+                      </motion.div>
+                      
+                      <span className="font-mono text-[11px] font-medium tabular-nums">{count}</span>
+
+                      {/* Floating +1 popover */}
+                      <AnimatePresence>
+                        {justLiked && (
+                          <motion.span
+                            initial={{ opacity: 0, y: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, y: -20, scale: 1.15 }}
+                            exit={{ opacity: 0, y: -28, scale: 0.9 }}
+                            transition={{ duration: 0.6, ease: 'easeOut' }}
+                            className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold font-mono text-rose-400 pointer-events-none drop-shadow"
+                          >
+                            +1
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </motion.button>
 
                     <span className="inline-flex items-center gap-1.5 font-medium text-white group-hover:translate-x-1 transition-transform">
                       <span>Explore</span> &rarr;
