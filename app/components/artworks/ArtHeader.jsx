@@ -1,61 +1,53 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FaArrowLeft, FaPencilAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaPencilAlt, FaLightbulb, FaRegLightbulb } from 'react-icons/fa';
 
-export default function ArtHeader({ onOpenSandbox }) {
+export default function ArtHeader({ onOpenSandbox, lightsOff, onToggleLights }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 font-body ${
-        scrolled 
-          ? 'bg-[#08080b]/90 backdrop-blur-md border-b border-white/10 py-3.5 shadow-2xl' 
-          : 'bg-gradient-to-b from-black/80 to-transparent py-5'
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+        scrolled ? 'bg-[#070709]/85 backdrop-blur-md border-b border-white/10 py-3' : 'py-4 sm:py-5'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        
-        {/* Left: Back Link & Gallery Identifier */}
-        <div className="flex items-center gap-4 sm:gap-6">
-          <Link
-            href="/"
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-all group"
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
+        <Link href="/" className="group flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors">
+          <FaArrowLeft className="text-[11px] group-hover:-translate-x-0.5 transition-transform" />
+          <span>Portfolio</span>
+        </Link>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onToggleLights}
+            aria-pressed={lightsOff}
+            title={lightsOff ? 'Turn the lights back on' : 'Turn the lights off'}
+            className={`h-9 px-3 rounded-full border text-xs flex items-center gap-2 transition-colors cursor-pointer ${
+              lightsOff
+                ? 'bg-[#e8dfc8] text-black border-[#e8dfc8]'
+                : 'border-white/15 text-zinc-300 hover:text-white hover:border-white/40'
+            }`}
           >
-            <FaArrowLeft className="text-[10px] group-hover:-translate-x-0.5 transition-transform" />
-            <span>Back to Portfolio</span>
-          </Link>
+            {lightsOff ? <FaLightbulb className="text-[12px]" /> : <FaRegLightbulb className="text-[12px]" />}
+            <span className="hidden xs:inline sm:inline">{lightsOff ? 'Lights on' : 'Lights off'}</span>
+          </button>
 
-          <div className="hidden sm:flex items-center gap-3 border-l border-white/15 pl-5">
-            <span className="text-xs uppercase tracking-widest text-zinc-300 font-mono font-medium">
-              Gagan&apos;s Sketchbook
-            </span>
-            <span className="text-zinc-600">&bull;</span>
-            <span className="text-xs text-zinc-400">
-              100% Pencil &amp; Charcoal on Paper
-            </span>
-          </div>
-        </div>
-
-        {/* Right: Actions */}
-        <div className="flex items-center gap-3">
           <button
             onClick={onOpenSandbox}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black font-medium text-xs transition-all shadow-sm cursor-pointer"
+            className="h-9 px-3.5 rounded-full bg-white text-black text-xs font-medium flex items-center gap-2 hover:bg-zinc-200 transition-colors cursor-pointer"
           >
             <FaPencilAlt className="text-[10px]" />
-            <span>Visitor Sketchpad</span>
+            <span>Sketchpad</span>
           </button>
         </div>
-
       </div>
     </header>
   );

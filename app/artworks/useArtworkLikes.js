@@ -1,13 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 
-export const BASE_LIKES = {
-  'ronaldo-goat': 42,
-  'paul-walker': 58,
-  'radha-krishna-eyes': 64,
-  'ronaldo-portrait': 37,
-  'falling-in-eyes': 29,
-};
+export const BASE_LIKES = {};
 
 export function useArtworkLikes() {
   const [likes, setLikes] = useState(BASE_LIKES);

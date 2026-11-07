@@ -21,8 +21,8 @@ export default function SocialShareModal({ isOpen, onClose, artwork }) {
     ? `${window.location.origin}/artworks#${artwork.id}` 
     : 'https://gagan-poojari.me/artworks';
 
-  const title = `Check out "${artwork.title}" - Original Sketch by Gagan Poojari`;
-  const text = `Explore "${artwork.title}", a hand-drawn ${artwork.medium} sketch by Gagan Poojari.`;
+  const title = `"${artwork.title}" — pencil drawing by Gagan Poojari`;
+  const text = `"${artwork.title}", drawn by hand in ${artwork.medium.toLowerCase()} by Gagan Poojari.`;
 
   const handleCopyLink = () => {
     if (navigator.clipboard) {
@@ -81,13 +81,13 @@ export default function SocialShareModal({ isOpen, onClose, artwork }) {
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-md bg-[#0d0e14] border border-white/20 rounded-2xl p-6 shadow-2xl space-y-5 font-mono"
+          className="relative w-full max-w-md bg-[#0d0e14] border border-white/20 rounded-2xl p-6 shadow-2xl space-y-5"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2 text-white">
               <FaShareAlt className="text-sm text-white/80" />
-              <h3 className="text-sm font-bold uppercase tracking-wider">Share Artwork</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wider">Share this drawing</h3>
             </div>
             <button
               onClick={onClose}
@@ -117,7 +117,7 @@ export default function SocialShareModal({ isOpen, onClose, artwork }) {
               className="w-full py-2.5 rounded-xl bg-white text-black font-bold text-xs flex items-center justify-center gap-2 hover:bg-zinc-200 transition-all shadow"
             >
               <FaShareAlt className="text-xs" />
-              <span>Share via Device Share Sheet</span>
+              <span>Share from your phone</span>
             </button>
           )}
 
@@ -140,7 +140,7 @@ export default function SocialShareModal({ isOpen, onClose, artwork }) {
             })}
           </div>
 
-          {/* Copy Direct Link */}
+          {/* Copy link */}
           <div className="pt-2 border-t border-white/10 flex items-center gap-2">
             <input
               type="text"

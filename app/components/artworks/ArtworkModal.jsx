@@ -1,497 +1,448 @@
 'use client';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FaTimes, 
-  FaSearchPlus, 
-  FaSearchMinus, 
-  FaRedo, 
-  FaDownload, 
-  FaShareAlt,
-  FaChevronLeft,
-  FaChevronRight,
-  FaClock,
-  FaLightbulb,
-  FaPenNib,
-  FaEye,
-  FaInfoCircle,
-  FaHeart,
-  FaRegHeart
+import { motion } from 'framer-motion';
+import {
+  FaTimes, FaSearchPlus, FaSearchMinus, FaDownload, FaShareAlt, FaChevronLeft, FaChevronRight,
+  FaHeart, FaRegHeart, FaSearch, FaAdjust, FaLayerGroup, FaDrawPolygon, FaBorderAll, FaHistory,
 } from 'react-icons/fa';
 import SocialShareModal from './SocialShareModal';
 import { handleDownloadImage } from '../../artworks/downloadHelper';
 import { useArtworkLikes } from '../../artworks/useArtworkLikes';
+import { analyzeImage } from '../../artworks/imagestudy';
+
+const LOUPE_R = 90;
+const LOUPE_Z = 2.8;
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
 export default function ArtworkModal({ artwork, artworks = [], onSelectArtwork, onClose, likeControls }) {
   const fallbackLikes = useArtworkLikes();
-  const { isLiked, getLikeCount, toggleLike, justLikedId } = likeControls || fallbackLikes;
-  const userLiked = isLiked(artwork?.id);
-  const likeCount = getLikeCount(artwork?.id);
-  const justLiked = justLikedId === artwork?.id;
+  const { isLiked, getLikeCount, toggleLike } = likeControls || fallbackLikes;
 
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  
-  // Cool feature toggles
-  const [showHotspots, setShowHotspots] = useState(true);
-  const [activeHotspot, setActiveHotspot] = useState(null);
-  const [lampShine, setLampShine] = useState(true);
-  const [shinePos, setShinePos] = useState({ x: 50, y: 50 });
-  
+  const [dragging, setDragging] = useState(false);
+  const [mode, setMode] = useState('none'); // 'none' | 'squint' | 'values' | 'edges'
+  const [grid, setGrid] = useState(false);
+  const [gridRows, setGridRows] = useState(5);
+  const [study, setStudy] = useState(null);
+  const [marker, setMarker] = useState(null);
+  const [loupe, setLoupe] = useState(false);
+  const [loupePos, setLoupePos] = useState({ x: 0, y: 0, w: 0, h: 0, show: false, touch: false });
+  const [process, setProcess] = useState(false);
+  const [split, setSplit] = useState(50);
   const [shareOpen, setShareOpen] = useState(false);
-  const containerRef = useRef(null);
 
-  const currentIndex = artworks.findIndex(a => a.id === artwork?.id);
+  const imgRef = useRef(null);
+  const pointers = useRef(new Map());
+  const g = useRef({ startDist: 0, startZoom: 1, startPan: { x: 0, y: 0 }, startPt: { x: 0, y: 0 } });
 
-  const handlePrev = useCallback(() => {
-    if (artworks.length === 0 || currentIndex === -1) return;
-    const prevIdx = (currentIndex - 1 + artworks.length) % artworks.length;
-    onSelectArtwork(artworks[prevIdx]);
+  const idx = artworks.findIndex((a) => a.id === artwork?.id);
+  const liked = isLiked(artwork?.id);
+  const count = getLikeCount(artwork?.id);
+
+  const resetView = useCallback(() => {
     setZoom(1);
     setPan({ x: 0, y: 0 });
-    setActiveHotspot(null);
-  }, [artworks, currentIndex, onSelectArtwork]);
+    setLoupePos((p) => ({ ...p, show: false }));
+  }, []);
 
-  const handleNext = useCallback(() => {
-    if (artworks.length === 0 || currentIndex === -1) return;
-    const nextIdx = (currentIndex + 1) % artworks.length;
-    onSelectArtwork(artworks[nextIdx]);
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
-    setActiveHotspot(null);
-  }, [artworks, currentIndex, onSelectArtwork]);
-
-  // Keyboard navigation
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowLeft') handlePrev();
-      if (e.key === 'ArrowRight') handleNext();
+    resetView();
+    setProcess(false);
+    setSplit(50);
+  }, [artwork?.id, resetView]);
+
+  // Measure the drawing's actual pixels (edge map, tonal range, brightest spot)
+  useEffect(() => {
+    let alive = true;
+    setStudy(null);
+    setMarker(null);
+    analyzeImage(artwork.image).then((r) => alive && setStudy(r)).catch(() => {});
+    return () => { alive = false; };
+  }, [artwork?.image]);
+
+  useEffect(() => {
+    if (!marker) return;
+    const t = setTimeout(() => setMarker(null), 2800);
+    return () => clearTimeout(t);
+  }, [marker]);
+
+  const go = useCallback(
+    (dir) => {
+      if (artworks.length < 2 || idx === -1) return;
+      onSelectArtwork(artworks[(idx + dir + artworks.length) % artworks.length]);
+    },
+    [artworks, idx, onSelectArtwork]
+  );
+
+  const setZoomSafe = (z) => {
+    const next = clamp(z, 1, 4);
+    setZoom(next);
+    if (next === 1) setPan({ x: 0, y: 0 });
+  };
+
+  // Keyboard
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.target.closest?.('input, textarea')) return;
+      const k = e.key.toLowerCase();
+      if (k === 'escape') onClose();
+      else if (k === 'arrowleft') go(-1);
+      else if (k === 'arrowright') go(1);
+      else if (k === 'e') setMode((m) => (m === 'edges' ? 'none' : 'edges'));
+      else if (k === 'g') setGrid((v) => !v);
+      else if (k === 'l') setLoupe((v) => !v);
+      else if (k === 's') setMode((m) => (m === 'squint' ? 'none' : 'squint'));
+      else if (k === 'v') setMode((m) => (m === 'values' ? 'none' : 'values'));
+      else if (k === '+' || k === '=') setZoomSafe(zoom + 0.5);
+      else if (k === '-') setZoomSafe(zoom - 0.5);
+      else if (k === '0') resetView();
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, handlePrev, handleNext]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose, go, zoom, resetView]);
 
   // Lock body scroll
   useEffect(() => {
+    const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
+    return () => { document.body.style.overflow = prev; };
   }, []);
 
-  const zoomIn = () => {
-    setZoom(prev => Math.min(prev + 0.5, 3));
-    setActiveHotspot(null);
-  };
-  const zoomOut = () => {
-    setZoom(prev => {
-      const next = Math.max(prev - 0.5, 1);
-      if (next === 1) setPan({ x: 0, y: 0 });
-      return next;
-    });
-  };
-  const resetZoom = () => {
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
+  // ── Pointer gestures: drag-pan, pinch-zoom, swipe to change drawing ──
+  const updateLoupe = (e) => {
+    if (!loupe || zoom !== 1 || !imgRef.current) return;
+    const r = imgRef.current.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    setLoupePos({ x, y, w: r.width, h: r.height, show: x >= 0 && y >= 0 && x <= r.width && y <= r.height, touch: e.pointerType === 'touch' });
   };
 
-  const handleMouseDown = (e) => {
-    if (zoom <= 1) return;
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-  };
-
-  const handleMouseMove = (e) => {
-    if (lampShine && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      setShinePos({ x, y });
+  const onPointerDown = (e) => {
+    if (e.target.closest('[data-ui]')) return;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 1) {
+      g.current.startPt = { x: e.clientX, y: e.clientY };
+      g.current.startPan = pan;
+      setDragging(zoom > 1 && !loupe);
+    } else if (pointers.current.size === 2) {
+      const [a, b] = [...pointers.current.values()];
+      g.current.startDist = Math.hypot(a.x - b.x, a.y - b.y);
+      g.current.startZoom = zoom;
+      setLoupePos((p) => ({ ...p, show: false }));
     }
-
-    if (!isDragging || zoom <= 1) return;
-    setPan({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    });
+    updateLoupe(e);
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
+  const onPointerMove = (e) => {
+    updateLoupe(e);
+    if (!pointers.current.has(e.pointerId)) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 2) {
+      const [a, b] = [...pointers.current.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (g.current.startDist) setZoomSafe(g.current.startZoom * (d / g.current.startDist));
+    } else if (pointers.current.size === 1 && zoom > 1 && !loupe) {
+      setPan({
+        x: g.current.startPan.x + (e.clientX - g.current.startPt.x),
+        y: g.current.startPan.y + (e.clientY - g.current.startPt.y),
+      });
+    }
+  };
+
+  const onPointerUp = (e) => {
+    const wasSingle = pointers.current.size === 1;
+    pointers.current.delete(e.pointerId);
+    setDragging(false);
+    if (e.pointerType === 'touch') setLoupePos((p) => ({ ...p, show: false }));
+    if (wasSingle && zoom === 1 && !loupe && e.pointerType !== 'mouse') {
+      const dx = e.clientX - g.current.startPt.x;
+      const dy = e.clientY - g.current.startPt.y;
+      if (Math.abs(dx) > 70 && Math.abs(dy) < 60) go(dx < 0 ? 1 : -1);
+    }
   };
 
   if (!artwork) return null;
 
+  const imgFilter = mode === 'squint' ? 'blur(6px) contrast(1.5) grayscale(1)' : mode === 'values' ? 'url(#values-4)' : 'none';
+  const hasWip = Boolean(artwork.wip);
+
+  const tools = [
+        { id: 'edges', icon: FaDrawPolygon, label: 'Lines', on: mode === 'edges', run: () => setMode((m) => (m === 'edges' ? 'none' : 'edges')), hint: 'E' },
+    { id: 'grid', icon: FaBorderAll, label: 'Grid', on: grid, run: () => setGrid((v) => !v), hint: 'G' },
+    { id: 'loupe', icon: FaSearch, label: 'Loupe', on: loupe, run: () => { setLoupe((v) => !v); resetView(); }, hint: 'L' },
+    { id: 'squint', icon: FaAdjust, label: 'Squint', on: mode === 'squint', run: () => setMode((m) => (m === 'squint' ? 'none' : 'squint')), hint: 'S' },
+    { id: 'values', icon: FaLayerGroup, label: 'Values', on: mode === 'values', run: () => setMode((m) => (m === 'values' ? 'none' : 'values')), hint: 'V' },
+    ...(hasWip ? [{ id: 'process', icon: FaHistory, label: 'Process', on: process, run: () => setProcess((v) => !v), hint: '' }] : []),
+  ];
+
   return (
     <>
-      <AnimatePresence>
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 lg:p-7 font-body">
-          
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+      <div className="fixed inset-0 z-50 flex items-stretch lg:items-center justify-center lg:p-6">
+        {/* hidden SVG filter: collapses the drawing into 4 tones */}
+        <svg width="0" height="0" className="absolute" aria-hidden>
+          <defs>
+            <filter id="values-4" colorInterpolationFilters="sRGB">
+              <feColorMatrix type="saturate" values="0" />
+              <feComponentTransfer>
+                <feFuncR type="discrete" tableValues="0 0.33 0.66 1" />
+                <feFuncG type="discrete" tableValues="0 0.33 0.66 1" />
+                <feFuncB type="discrete" tableValues="0 0.33 0.66 1" />
+              </feComponentTransfer>
+            </filter>
+          </defs>
+        </svg>
+
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={onClose} className="fixed inset-0 bg-black/92 backdrop-blur-xl" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="relative z-10 w-full lg:max-w-6xl h-[100dvh] lg:h-auto lg:max-h-[92vh] flex flex-col lg:flex-row bg-[#09090c] lg:rounded-2xl lg:border border-white/10 overflow-hidden shadow-2xl"
+        >
+          <button
             onClick={onClose}
-            className="fixed inset-0 bg-black/90 backdrop-blur-xl"
-          />
-
-          {/* Modal Container */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: 15 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: 15 }}
-            transition={{ duration: 0.25 }}
-            className="relative z-10 w-full max-w-6xl bg-[#0c0c11] border border-white/15 rounded-2xl overflow-hidden shadow-2xl flex flex-col lg:flex-row max-h-[92vh]"
+            data-ui
+            aria-label="Close"
+            className="absolute top-3 right-3 z-30 h-10 w-10 rounded-full bg-black/70 border border-white/15 text-zinc-300 hover:text-white hover:bg-white/15 flex items-center justify-center transition-colors cursor-pointer"
           >
-            
-            {/* Top Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 z-30 p-2.5 rounded-full bg-black/70 hover:bg-white/20 text-zinc-300 hover:text-white border border-white/20 transition-all cursor-pointer"
-              title="Close (Esc)"
-            >
-              <FaTimes className="text-xs" />
-            </button>
+            <FaTimes className="text-xs" />
+          </button>
 
-            {/* Left / Right Carousel Buttons */}
+          {/* ── Stage ── */}
+          <div
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            onPointerLeave={() => setLoupePos((p) => ({ ...p, show: false }))}
+            onWheel={(e) => setZoomSafe(zoom - e.deltaY * 0.002)}
+            onDoubleClick={(e) => { if (!e.target.closest('[data-ui]')) setZoomSafe(zoom > 1 ? 1 : 2.5); }}
+            className={`relative h-[56dvh] lg:h-auto lg:flex-1 lg:min-h-[620px] bg-[#050507] flex items-center justify-center overflow-hidden select-none touch-none ${
+              loupe ? 'cursor-crosshair' : zoom > 1 ? (dragging ? 'cursor-grabbing' : 'cursor-grab') : ''
+            }`}
+          >
+            {/* counter + prev/next */}
             {artworks.length > 1 && (
-              <>
-                <button
-                  onClick={handlePrev}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/70 hover:bg-white/20 text-zinc-300 hover:text-white border border-white/20 transition-all hidden sm:flex cursor-pointer"
-                  title="Previous artwork (Left Arrow)"
-                >
-                  <FaChevronLeft className="text-xs" />
-                </button>
-
-                <button
-                  onClick={handleNext}
-                  className="absolute right-4 lg:right-[415px] top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/70 hover:bg-white/20 text-zinc-300 hover:text-white border border-white/20 transition-all hidden sm:flex cursor-pointer"
-                  title="Next artwork (Right Arrow)"
-                >
-                  <FaChevronRight className="text-xs" />
-                </button>
-              </>
+              <div data-ui className="absolute top-3 left-3 z-30 flex items-center gap-1 h-10 pl-1 pr-3 rounded-full bg-black/70 border border-white/15 text-zinc-300">
+                <button onClick={() => go(-1)} aria-label="Previous" className="h-8 w-8 flex items-center justify-center hover:text-white cursor-pointer"><FaChevronLeft className="text-[11px]" /></button>
+                <span className="font-mono text-xs tabular-nums">{idx + 1}/{artworks.length}</span>
+                <button onClick={() => go(1)} aria-label="Next" className="h-8 w-8 flex items-center justify-center hover:text-white cursor-pointer"><FaChevronRight className="text-[11px]" /></button>
+              </div>
             )}
 
-            {/* Left: Interactive Canvas with Hotspots & Shine */}
-            <div 
-              ref={containerRef}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              className={`relative flex-1 bg-[#050508] flex items-center justify-center min-h-[380px] lg:min-h-[620px] p-4 sm:p-6 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 ${
-                zoom > 1 ? 'cursor-grab active:cursor-grabbing' : ''
-              }`}
+            <div
+              className="relative inline-block"
+              style={{
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                transition: dragging ? 'none' : 'transform 0.18s ease-out',
+              }}
             >
-              
-              {/* Image & Hotspot Wrapper */}
-              <div 
-                className="relative inline-block max-h-[74vh] max-w-full"
+              {/* Process slider: unfinished (left) vs finished (right) */}
+              {process && hasWip && (
+                <img src={artwork.wip} alt="" draggable={false} className="absolute inset-0 w-full h-full object-contain" />
+              )}
+              <img
+                ref={imgRef}
+                src={artwork.image}
+                alt={artwork.title}
+                draggable={false}
+                onLoad={(e) => setGridRows(Math.max(3, Math.round(4 * (e.currentTarget.naturalHeight / e.currentTarget.naturalWidth))))}
+                className="block max-h-[calc(56dvh-5.5rem)] lg:max-h-[76vh] max-w-full w-auto object-contain shadow-2xl transition-[filter] duration-300"
                 style={{
-                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                  transformOrigin: 'center center',
-                  transition: isDragging ? 'none' : 'transform 0.2s ease-out'
+                  filter: imgFilter,
+                  opacity: mode === 'edges' ? 0 : 1,
+                  clipPath: process && hasWip ? `inset(0 0 0 ${split}%)` : undefined,
                 }}
-              >
-                <img
-                  src={artwork.image}
-                  alt={artwork.title}
-                  draggable={false}
-                  className="max-h-[74vh] w-auto max-w-full object-contain rounded-lg shadow-2xl select-none"
-                />
-
-                {/* Simulated Desk Lamp Graphite Shine */}
-                {lampShine && (
-                  <div
-                    className="pointer-events-none absolute inset-0 rounded-lg mix-blend-overlay transition-opacity duration-150"
-                    style={{
-                      background: `radial-gradient(circle 220px at ${shinePos.x}% ${shinePos.y}%, rgba(255, 255, 255, 0.45) 0%, transparent 80%)`,
-                    }}
+              />
+              {process && hasWip && (
+                <>
+                  <span className="pointer-events-none absolute top-0 bottom-0 w-px bg-white/80" style={{ left: `${split}%` }} />
+                  <span className="pointer-events-none absolute top-2 left-2 font-handwriting text-lg text-white drop-shadow">process</span>
+                  <span className="pointer-events-none absolute top-2 right-2 font-handwriting text-lg text-white drop-shadow">finished</span>
+                  <input
+                    data-ui
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={split}
+                    onChange={(e) => setSplit(Number(e.target.value))}
+                    aria-label="Process slider"
+                    className="absolute bottom-3 left-4 right-4 accent-[#e8dfc8]"
                   />
-                )}
+                </>
+              )}
 
-                {/* Interactive Hotspot Pins (Visible when 1x zoom and toggled ON) */}
-                {showHotspots && zoom === 1 && artwork.hotspots && artwork.hotspots.map((spot) => {
-                  const isSelected = activeHotspot?.id === spot.id;
+              {/* Loupe */}
+              {loupe && loupePos.show && (
+                <div
+                  className="pointer-events-none absolute rounded-full border-2 border-white/70 shadow-[0_8px_30px_rgba(0,0,0,0.7)] bg-no-repeat"
+                  style={{
+                    width: LOUPE_R * 2,
+                    height: LOUPE_R * 2,
+                    left: loupePos.x - LOUPE_R,
+                    top: loupePos.y - LOUPE_R - (loupePos.touch ? 90 : 0),
+                    backgroundImage: `url(${artwork.image})`,
+                    backgroundSize: `${loupePos.w * LOUPE_Z}px ${loupePos.h * LOUPE_Z}px`,
+                    backgroundPosition: `${LOUPE_R - loupePos.x * LOUPE_Z}px ${LOUPE_R - loupePos.y * LOUPE_Z}px`,
+                  }}
+                />
+              )}
 
-                  return (
-                    <div
-                      key={spot.id}
-                      style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
-                      className="absolute -translate-x-1/2 -translate-y-1/2 z-20"
-                    >
-                      {/* Pulse Ping */}
-                      <span className="absolute -inset-1 rounded-full bg-amber-400/40 animate-ping pointer-events-none" />
-                      
-                      {/* Pin Trigger */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveHotspot(isSelected ? null : spot);
-                        }}
-                        className={`relative w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all shadow-lg cursor-pointer ${
-                          isSelected
-                            ? 'bg-amber-400 text-black border-white scale-110'
-                            : 'bg-black/80 text-amber-300 border-amber-400/80 hover:bg-amber-400 hover:text-black'
-                        }`}
-                        title={spot.title}
-                      >
-                        ?
-                      </button>
-
-                      {/* Tooltip Card */}
-                      <AnimatePresence>
-                        {isSelected && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 8 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 8 }}
-                            className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 p-3 rounded-xl bg-black/95 border border-amber-400/50 shadow-2xl z-30 text-left pointer-events-auto"
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-semibold flex items-center gap-1">
-                                <FaLightbulb className="text-[9px]" /> {spot.title}
-                              </span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveHotspot(null);
-                                }}
-                                className="text-zinc-400 hover:text-white text-xs p-0.5"
-                              >
-                                &times;
-                              </button>
-                            </div>
-                            <p className="text-[11px] text-zinc-200 leading-relaxed">
-                              {spot.note}
-                            </p>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Bottom Interactive Dock */}
-              <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/85 backdrop-blur-md border border-white/20 text-white text-xs shadow-2xl z-20">
-                
-                {/* Hotspot Toggle */}
-                {artwork.hotspots && (
-                  <button
-                    onClick={() => {
-                      setShowHotspots(!showHotspots);
-                      setActiveHotspot(null);
-                    }}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] transition-all cursor-pointer ${
-                      showHotspots 
-                        ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' 
-                        : 'text-zinc-400 hover:text-white'
-                    }`}
-                    title="Toggle secret sketch annotations"
-                  >
-                    <FaLightbulb className="text-[10px]" />
-                    <span>Secrets</span>
-                    <span className="text-[9px] px-1 bg-white/10 rounded">{showHotspots ? 'ON' : 'OFF'}</span>
-                  </button>
-                )}
-
-                <div className="w-[1px] h-3.5 bg-white/20" />
-
-                {/* Desk Lamp Shine Toggle */}
-                <button
-                  onClick={() => setLampShine(!lampShine)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] transition-all cursor-pointer ${
-                    lampShine 
-                      ? 'bg-white/20 text-white border border-white/30 font-medium' 
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                  title="Simulate realistic desk lamp graphite shine"
+              {/* Edge map (measured from the image's pixels) */}
+              {study && (
+                <div
+                  className={`pointer-events-none absolute inset-0 bg-black transition-opacity duration-300 ${mode === 'edges' ? 'opacity-100' : 'opacity-0'}`}
                 >
-                  <FaEye className="text-[10px]" />
-                  <span>Graphite Shine</span>
-                </button>
-
-                <div className="w-[1px] h-3.5 bg-white/20" />
-
-                {/* Zoom Controls */}
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={zoomIn}
-                    className="p-1 hover:text-white text-zinc-400 transition-colors cursor-pointer"
-                    title="Zoom In"
-                  >
-                    <FaSearchPlus />
-                  </button>
-                  <span className="text-[10px] text-zinc-400 w-8 text-center font-mono">
-                    {Math.round(zoom * 100)}%
-                  </span>
-                  <button
-                    onClick={zoomOut}
-                    className="p-1 hover:text-white text-zinc-400 transition-colors cursor-pointer"
-                    title="Zoom Out"
-                  >
-                    <FaSearchMinus />
-                  </button>
-                  {zoom > 1 && (
-                    <button
-                      onClick={resetZoom}
-                      className="p-1 hover:text-white text-zinc-400 transition-colors cursor-pointer ml-1"
-                      title="Reset View"
-                    >
-                      <FaRedo className="text-[9px]" />
-                    </button>
-                  )}
+                  <img src={study.edgeUrl} alt="" draggable={false} className="w-full h-full object-fill" />
                 </div>
+              )}
 
-              </div>
+              {/* Proportion grid */}
+              {grid && (
+                <div
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    backgroundImage:
+                      'linear-gradient(to right, rgba(232,223,200,0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(232,223,200,0.35) 1px, transparent 1px)',
+                    backgroundSize: `${100 / 4}% ${100 / gridRows}%`,
+                    boxShadow: 'inset 0 0 0 1px rgba(232,223,200,0.35)',
+                  }}
+                />
+              )}
 
+              {/* Brightest-spot marker */}
+              {marker && (
+                <span
+                  className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
+                  style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
+                >
+                  <span className="absolute -inset-5 rounded-full border-2 border-red-500 animate-ping" />
+                  <span
+                    className="block h-12 w-12 border-2 border-red-500"
+                    style={{ borderRadius: '52% 48% 55% 45% / 50% 55% 45% 50%' }}
+                  />
+                </span>
+              )}
             </div>
 
-            {/* Right: Human Story & Studio Dossier */}
-            <div className="w-full lg:w-[410px] p-6 sm:p-7 flex flex-col justify-between overflow-y-auto space-y-6 bg-[#0a0a0e]">
-              
-              <div className="space-y-5">
-                
-                {/* Category & Counter */}
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/15 bg-white/5 text-zinc-300 text-xs font-mono">
-                    {artwork.category}
-                  </span>
-                  <span className="text-xs font-mono text-zinc-500">
-                    {currentIndex + 1} of {artworks.length}
-                  </span>
+            {/* Viewing tools */}
+            <div data-ui className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-0.5 p-1 rounded-full bg-black/80 backdrop-blur-md border border-white/15 max-w-[calc(100%-1rem)]">
+              {tools.map((t) => {
+                const Icon = t.icon;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={t.run}
+                    title={t.hint ? `${t.label} (${t.hint})` : t.label}
+                    aria-pressed={t.on}
+                    className={`h-9 px-2.5 sm:px-3 rounded-full flex items-center gap-1.5 text-[11px] transition-colors cursor-pointer ${
+                      t.on ? 'bg-[#e8dfc8] text-black' : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <Icon className="text-[12px]" />
+                    <span className="hidden sm:inline">{t.label}</span>
+                  </button>
+                );
+              })}
+              <span className="w-px h-4 bg-white/15 mx-1" />
+              <button onClick={() => setZoomSafe(zoom - 0.5)} aria-label="Zoom out" className="h-9 w-8 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"><FaSearchMinus className="text-xs" /></button>
+              <button onClick={() => setZoomSafe(zoom + 0.5)} aria-label="Zoom in" className="h-9 w-8 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"><FaSearchPlus className="text-xs" /></button>
+            </div>
+          </div>
+
+          {/* ── Info ── */}
+          <div className="flex-1 lg:flex-none lg:w-[400px] overflow-y-auto p-6 lg:p-8 flex flex-col gap-7 border-t lg:border-t-0 lg:border-l border-white/10">
+            <div>
+              <p className="font-mono text-xs text-zinc-500">No. {String(idx + 1).padStart(2, '0')} &middot; {artwork.year} &middot; {artwork.category}</p>
+              <h2 className="font-display text-4xl text-white mt-2 leading-none">{artwork.title}</h2>
+              <p className="text-sm text-zinc-400 mt-2">{artwork.subtitle}</p>
+            </div>
+
+            <p className="text-[15px] leading-relaxed text-zinc-200">{artwork.story}</p>
+
+            {artwork.funFact && (
+              <p className="font-handwriting text-xl leading-snug text-[#e8dfc8] -rotate-1">&#8627; {artwork.funFact}</p>
+            )}
+
+            {study && (
+              <div>
+                <p className="font-mono text-[11px] uppercase text-zinc-500 mb-3">Tonal range</p>
+                <div className="flex items-end gap-[2px] h-12" aria-hidden>
+                  {study.hist.map((v, i) => (
+                    <span
+                      key={i}
+                      className="flex-1 rounded-[1px]"
+                      style={{
+                        height: `${Math.max(3, Math.sqrt(v) * 100)}%`,
+                        background: `rgb(${Math.round((i / 23) * 215 + 30)},${Math.round((i / 23) * 210 + 30)},${Math.round((i / 23) * 200 + 30)})`,
+                      }}
+                    />
+                  ))}
                 </div>
-
-                {/* Titles */}
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-display uppercase tracking-wide text-white leading-tight">
-                    {artwork.title}
-                  </h2>
-                  <p className="text-xs text-zinc-400 mt-1 font-medium">
-                    {artwork.subtitle}
-                  </p>
+                <div className="mt-2 flex items-center justify-between text-xs text-zinc-500 font-mono">
+                  <span>{study.darkPct}% of the sheet is near-black</span>
+                  <button
+                    onClick={() => setMarker({ x: study.bright.x, y: study.bright.y })}
+                    className="text-zinc-300 hover:text-white underline underline-offset-4 decoration-white/20 cursor-pointer"
+                  >
+                    find the brightest spot
+                  </button>
                 </div>
-
-                {/* First-Person Human Story */}
-                <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
-                  <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest block font-semibold">
-                    The Story Behind This Drawing
-                  </span>
-                  <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-body">
-                    &ldquo;{artwork.story}&rdquo;
-                  </p>
-                </div>
-
-                {/* Fun Fact */}
-                {artwork.funFact && (
-                  <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200">
-                    <FaInfoCircle className="text-sm shrink-0 mt-0.5 text-amber-400" />
-                    <span><strong>Behind-the-scenes:</strong> {artwork.funFact}</span>
-                  </div>
-                )}
-
-                {/* Tools & Time Spent */}
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between py-1.5 border-b border-white/5">
-                    <span className="text-zinc-400 flex items-center gap-1.5">
-                      <FaClock className="text-zinc-500 text-[11px]" /> Time Invested:
-                    </span>
-                    <span className="text-zinc-200 font-medium">{artwork.timeSpent}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between py-1.5 border-b border-white/5">
-                    <span className="text-zinc-400 flex items-center gap-1.5">
-                      <FaPenNib className="text-zinc-500 text-[11px]" /> Medium &amp; Pencils:
-                    </span>
-                    <span className="text-zinc-200 font-medium truncate max-w-[210px] text-right" title={artwork.pencils || artwork.medium}>
-                      {artwork.pencils || artwork.medium}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Hotspot Guide Callout */}
-                {artwork.hotspots && (
-                  <div className="p-3 rounded-xl border border-white/10 bg-white/[0.02] flex items-center justify-between text-xs text-zinc-400">
-                    <span>💡 Tap the yellow <strong>?</strong> pins on the drawing to see how specific details were rendered.</span>
-                  </div>
-                )}
-
               </div>
+            )}
 
-              {/* Action Buttons */}
-              <div className="pt-4 border-t border-white/10 flex items-center gap-2.5">
-                {/* Like Button */}
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
+            <dl className="grid grid-cols-[76px_1fr] gap-x-4 gap-y-3 text-sm">
+              <dt className="font-mono text-[11px] uppercase text-zinc-500 pt-0.5">Time</dt>
+              <dd className="text-zinc-200">{artwork.timeSpent}</dd>
+              <dt className="font-mono text-[11px] uppercase text-zinc-500 pt-0.5">Medium</dt>
+              <dd className="text-zinc-200">{artwork.medium}</dd>
+              <dt className="font-mono text-[11px] uppercase text-zinc-500 pt-0.5">Tools</dt>
+              <dd className="text-zinc-200">{artwork.pencils}</dd>
+              <dt className="font-mono text-[11px] uppercase text-zinc-500 pt-0.5">Size</dt>
+              <dd className="text-zinc-200">{artwork.dimensions}</dd>
+            </dl>
+
+            <div className="mt-auto space-y-4">
+              <div className="flex items-center gap-2.5">
+                <button
                   onClick={(e) => toggleLike(artwork.id, e)}
-                  className={`relative flex items-center gap-2 px-3.5 py-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                    userLiked
-                      ? 'bg-rose-500/20 border-rose-500/50 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.3)]'
-                      : 'bg-white/5 hover:bg-white/10 border-white/15 text-zinc-300 hover:text-white'
+                  aria-pressed={liked}
+                  className={`h-11 px-4 rounded-xl border flex items-center gap-2 text-sm transition-colors cursor-pointer ${
+                    liked ? 'border-rose-500/50 bg-rose-500/10 text-rose-300' : 'border-white/15 text-zinc-300 hover:text-white hover:border-white/40'
                   }`}
-                  title={userLiked ? 'Liked! Click to undo' : 'Leave a heart for this artwork'}
                 >
-                  <motion.div animate={justLiked ? { scale: [1, 1.45, 1] } : {}} transition={{ duration: 0.35 }}>
-                    {userLiked ? (
-                      <FaHeart className="text-rose-500 text-sm" />
-                    ) : (
-                      <FaRegHeart className="text-zinc-400 group-hover:text-rose-400 text-sm" />
-                    )}
-                  </motion.div>
-                  <span className="font-mono text-xs">{likeCount}</span>
-                  <AnimatePresence>
-                    {justLiked && (
-                      <motion.span
-                        initial={{ opacity: 0, y: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, y: -22, scale: 1.15 }}
-                        exit={{ opacity: 0, y: -30, scale: 0.9 }}
-                        transition={{ duration: 0.6, ease: 'easeOut' }}
-                        className="absolute -top-1 left-1/2 -translate-x-1/2 text-[10px] font-bold font-mono text-rose-400 pointer-events-none drop-shadow"
-                      >
-                        +1
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </motion.button>
+                  {liked ? <FaHeart className="text-rose-500" /> : <FaRegHeart />}
+                  {count > 0 && <span className="font-mono text-xs">{count}</span>}
+                </button>
 
                 <button
                   onClick={() => handleDownloadImage(artwork.image, `${artwork.id}-gagan-poojari.webp`)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition-all shadow-md cursor-pointer"
+                  className="flex-1 h-11 rounded-xl bg-white text-black text-sm font-medium flex items-center justify-center gap-2 hover:bg-zinc-200 transition-colors cursor-pointer"
                 >
-                  <FaDownload className="text-xs" />
-                  <span>Download High-Res</span>
+                  <FaDownload className="text-xs" /> Download
                 </button>
 
                 <button
                   onClick={() => setShareOpen(true)}
-                  className="p-3 rounded-xl bg-white/5 hover:bg-white/15 border border-white/15 text-zinc-300 hover:text-white transition-all text-xs flex items-center gap-2 cursor-pointer"
-                  title="Share Artwork"
+                  aria-label="Share"
+                  className="h-11 w-11 rounded-xl border border-white/15 text-zinc-300 hover:text-white hover:border-white/40 flex items-center justify-center transition-colors cursor-pointer"
                 >
-                  <FaShareAlt className="text-xs" />
-                  <span>Share</span>
+                  <FaShareAlt className="text-sm" />
                 </button>
               </div>
 
+              <p className="hidden lg:block font-mono text-[10px] text-zinc-600 leading-relaxed">
+                &larr; &rarr; switch &middot; E lines &middot; G grid &middot; L loupe &middot; S squint &middot; V values &middot; scroll or pinch to zoom
+              </p>
             </div>
+          </div>
+        </motion.div>
+      </div>
 
-          </motion.div>
-
-        </div>
-      </AnimatePresence>
-
-      {/* Social Share Modal */}
-      <SocialShareModal
-        isOpen={shareOpen}
-        onClose={() => setShareOpen(false)}
-        artwork={artwork}
-      />
+      <SocialShareModal isOpen={shareOpen} onClose={() => setShareOpen(false)} artwork={artwork} />
     </>
   );
 }

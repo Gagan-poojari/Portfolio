@@ -18,16 +18,16 @@ const navLinks = [
 ];
 
 const socials = [
-  { 
-    name: 'GitHub', 
-    url: 'https://github.com/Gagan-poojari', 
-    icon: FaGithub, 
+  {
+    name: 'GitHub',
+    url: 'https://github.com/Gagan-poojari',
+    icon: FaGithub,
     accent: '#ffffff',
   },
-  { 
-    name: 'LinkedIn', 
-    url: 'https://www.linkedin.com/in/gaganpoojari/', 
-    icon: FaLinkedin, 
+  {
+    name: 'LinkedIn',
+    url: 'https://www.linkedin.com/in/gaganpoojari/',
+    icon: FaLinkedin,
     accent: '#38bdf8',
   },
 ];
@@ -136,81 +136,80 @@ function MobileSearchSheet({ open, onClose, items }) {
 
   return (
     <Portal>
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.18 }}
-          className="fixed inset-0 z-[9999] lg:hidden flex flex-col"
-          style={{ height: '100dvh', background: '#030406', paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Search"
-        >
-          {/* Input row */}
-          <div className="flex items-center gap-2 px-3 pt-3 pb-2">
-            <div className="flex-1 flex items-center gap-2.5 h-12 px-3.5 rounded-2xl border border-white/15 bg-white/[0.05] focus-within:border-sky-400/60 focus-within:shadow-[0_0_20px_rgba(56,189,248,0.18)] transition-all">
-              <SearchIcon className="w-4 h-4 text-zinc-400 shrink-0" />
-              <input
-                ref={inputRef}
-                value={query}
-                onChange={(e) => { setQuery(e.target.value); setCursor(0); }}
-                onKeyDown={onKeyDown}
-                placeholder="Search sections, links…"
-                className="flex-1 min-w-0 bg-transparent outline-none text-[16px] text-white placeholder:text-zinc-500 font-mono"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck={false}
-                enterKeyHint="go"
-              />
-              {query && (
-                <button onClick={() => { setQuery(''); inputRef.current?.focus(); }} className="text-zinc-500 text-xs px-1" aria-label="Clear">✕</button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="fixed inset-0 z-[9999] lg:hidden flex flex-col"
+            style={{ height: '100dvh', background: '#030406', paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Search"
+          >
+            {/* Input row */}
+            <div className="flex items-center gap-2 px-3 pt-3 pb-2">
+              <div className="flex-1 flex items-center gap-2.5 h-12 px-3.5 rounded-2xl border border-white/15 bg-white/[0.05] focus-within:border-sky-400/60 focus-within:shadow-[0_0_20px_rgba(56,189,248,0.18)] transition-all">
+                <SearchIcon className="w-4 h-4 text-zinc-400 shrink-0" />
+                <input
+                  ref={inputRef}
+                  value={query}
+                  onChange={(e) => { setQuery(e.target.value); setCursor(0); }}
+                  onKeyDown={onKeyDown}
+                  placeholder="Search sections, links…"
+                  className="flex-1 min-w-0 bg-transparent outline-none text-[16px] text-white placeholder:text-zinc-500 font-mono"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="go"
+                />
+                {query && (
+                  <button onClick={() => { setQuery(''); inputRef.current?.focus(); }} className="text-zinc-500 text-xs px-1" aria-label="Clear">✕</button>
+                )}
+              </div>
+              <button onClick={onClose} className="h-12 px-3 text-xs font-mono uppercase tracking-widest text-zinc-300 active:text-white">
+                Close
+              </button>
+            </div>
+
+            {/* Results */}
+            <div className="flex-1 overflow-y-auto overscroll-contain px-3 pb-6">
+              {results.length === 0 ? (
+                <p className="text-center text-zinc-500 font-mono text-xs pt-12">No match for “{query}”</p>
+              ) : (
+                <ul className="space-y-1.5 pt-1">
+                  {results.map((item, i) => (
+                    <motion.li
+                      key={item.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(i * 0.03, 0.2), duration: 0.2 }}
+                    >
+                      <button
+                        onClick={() => pick(item)}
+                        onMouseEnter={() => setCursor(i)}
+                        className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border text-left transition-colors ${i === cursor ? 'border-white/25 bg-white/[0.08]' : 'border-white/[0.06] bg-white/[0.02]'
+                          }`}
+                      >
+                        <span className="w-9 h-9 shrink-0 rounded-lg border border-white/10 bg-white/[0.04] flex items-center justify-center text-zinc-300 text-xs font-mono">
+                          {item.icon ? <item.icon className="text-sm" /> : item.num}
+                        </span>
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-sm text-white font-mono truncate">{item.label}</span>
+                          <span className="block text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-mono">{item.kind}</span>
+                        </span>
+                        <span className="text-zinc-500 text-xs">↵</span>
+                      </button>
+                    </motion.li>
+                  ))}
+                </ul>
               )}
             </div>
-            <button onClick={onClose} className="h-12 px-3 text-xs font-mono uppercase tracking-widest text-zinc-300 active:text-white">
-              Close
-            </button>
-          </div>
-
-          {/* Results */}
-          <div className="flex-1 overflow-y-auto overscroll-contain px-3 pb-6">
-            {results.length === 0 ? (
-              <p className="text-center text-zinc-500 font-mono text-xs pt-12">No match for “{query}”</p>
-            ) : (
-              <ul className="space-y-1.5 pt-1">
-                {results.map((item, i) => (
-                  <motion.li
-                    key={item.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(i * 0.03, 0.2), duration: 0.2 }}
-                  >
-                    <button
-                      onClick={() => pick(item)}
-                      onMouseEnter={() => setCursor(i)}
-                      className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border text-left transition-colors ${
-                        i === cursor ? 'border-white/25 bg-white/[0.08]' : 'border-white/[0.06] bg-white/[0.02]'
-                      }`}
-                    >
-                      <span className="w-9 h-9 shrink-0 rounded-lg border border-white/10 bg-white/[0.04] flex items-center justify-center text-zinc-300 text-xs font-mono">
-                        {item.icon ? <item.icon className="text-sm" /> : item.num}
-                      </span>
-                      <span className="flex-1 min-w-0">
-                        <span className="block text-sm text-white font-mono truncate">{item.label}</span>
-                        <span className="block text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-mono">{item.kind}</span>
-                      </span>
-                      <span className="text-zinc-500 text-xs">↵</span>
-                    </button>
-                  </motion.li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Portal>
   );
 }
@@ -355,20 +354,18 @@ export default function NavBar() {
 
       {/* Main Header Container - fixed height with smooth glass transition */}
       <header
-        className={`fixed top-0 left-0 right-0 z-[100] h-16 md:h-20 flex items-center transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out ${
-          hideHeader && !mobileOpen ? '-translate-y-full' : 'translate-y-0'
-        } ${
-          scrolled || mobileOpen
+        className={`fixed top-0 left-0 right-0 z-[100] h-16 md:h-20 flex items-center transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out ${hideHeader && !mobileOpen ? '-translate-y-full' : 'translate-y-0'
+          } ${scrolled || mobileOpen
             ? 'bg-[#050609]/80 backdrop-blur-xl border-b border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.5)]'
             : 'bg-transparent border-b border-transparent'
-        }`}
+          }`}
       >
         <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
 
           {/* ── LEFT: PROMINENT SIGNATURE ── */}
           <div className="flex items-center z-10">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="group flex items-center cursor-pointer select-none py-1"
               title="Gagan Poojari - Home"
             >
@@ -384,7 +381,7 @@ export default function NavBar() {
           <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-auto">
             <nav className="flex items-center gap-1 p-1 rounded-full bg-black/40 border border-white/10 backdrop-blur-md shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
               {navLinks.map((l) => {
-                const isLinkActive = isHome 
+                const isLinkActive = isHome
                   ? (activeSection === l.section)
                   : (pathname === l.href);
                 const targetHref = l.href ? l.href : `/#${l.section}`;
@@ -406,9 +403,8 @@ export default function NavBar() {
                     )}
 
                     <span
-                      className={`relative z-10 transition-colors duration-200 ${
-                        isLinkActive ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white'
-                      }`}
+                      className={`relative z-10 transition-colors duration-200 ${isLinkActive ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white'
+                        }`}
                     >
                       {l.name}
                     </span>
@@ -506,19 +502,16 @@ export default function NavBar() {
               className="w-9 h-9 rounded-lg border border-white/15 bg-white/[0.06] hover:bg-white/10 flex flex-col items-center justify-center gap-1.5 cursor-pointer text-white transition-colors"
             >
               <span
-                className={`w-4 h-[1.5px] bg-white block transition-transform duration-200 origin-center ${
-                  mobileOpen ? 'rotate-45 translate-y-[4.5px]' : ''
-                }`}
+                className={`w-4 h-[1.5px] bg-white block transition-transform duration-200 origin-center ${mobileOpen ? 'rotate-45 translate-y-[4.5px]' : ''
+                  }`}
               />
               <span
-                className={`w-4 h-[1.5px] bg-white block transition-opacity duration-150 ${
-                  mobileOpen ? 'opacity-0' : 'opacity-100'
-                }`}
+                className={`w-4 h-[1.5px] bg-white block transition-opacity duration-150 ${mobileOpen ? 'opacity-0' : 'opacity-100'
+                  }`}
               />
               <span
-                className={`w-4 h-[1.5px] bg-white block transition-transform duration-200 origin-center ${
-                  mobileOpen ? '-rotate-45 -translate-y-[4.5px]' : ''
-                }`}
+                className={`w-4 h-[1.5px] bg-white block transition-transform duration-200 origin-center ${mobileOpen ? '-rotate-45 -translate-y-[4.5px]' : ''
+                  }`}
               />
             </button>
           </div>
@@ -528,150 +521,154 @@ export default function NavBar() {
 
       {/* Mobile & Tablet Drawer Menu */}
       <Portal>
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.button
-              aria-label="Close menu"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 z-[98] lg:hidden bg-black/70 backdrop-blur-sm cursor-default"
-            />
+        <AnimatePresence>
+          {mobileOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.button
+                aria-label="Close menu"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMobileOpen(false)}
+                className="fixed inset-0 z-[98] lg:hidden bg-black/70 backdrop-blur-sm cursor-default"
+              />
 
-            <motion.div
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.24, ease: 'easeOut' }}
-              className="fixed inset-x-0 top-16 md:top-20 z-[99] lg:hidden border-b border-white/10 shadow-2xl px-5 pt-3 pb-5 font-mono overflow-y-auto overscroll-contain"
-              style={{ maxHeight: 'calc(100dvh - 4rem)', background: '#050609' }}
-            >
-              <div className="flex flex-col">
-                {navLinks.map((l, i) => {
-                  const isLinkActive = isHome ? activeSection === l.section : pathname === l.href;
-                  const targetHref = l.href ? l.href : `/#${l.section}`;
+              <motion.div
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.24, ease: 'easeOut' }}
+                className="fixed inset-x-0 top-16 md:top-20 z-[99] lg:hidden border-b border-white/10 shadow-2xl px-5 pt-3 pb-5 font-mono overflow-y-auto overscroll-contain"
+                style={{ maxHeight: 'calc(100dvh - 4rem)', background: '#050609' }}
+              >
+                <div className="flex flex-col">
+                  {navLinks.map((l, i) => {
+                    const isLinkActive = isHome ? activeSection === l.section : pathname === l.href;
+                    const targetHref = l.href ? l.href : `/#${l.section}`;
 
-                  return (
-                    <motion.div
-                      key={l.name}
-                      initial={{ opacity: 0, x: -14 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.04 + i * 0.045, duration: 0.25 }}
-                    >
-                      <Link
-                        href={targetHref}
-                        onClick={(e) => {
-                          setMobileOpen(false);
-                          handleNavClick(l.section, l.href, e);
-                        }}
-                        className="group relative flex items-center gap-4 py-3.5 border-b border-white/[0.07] cursor-pointer"
+                    return (
+                      <motion.div
+                        key={l.name}
+                        initial={{ opacity: 0, x: -14 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.04 + i * 0.045, duration: 0.25 }}
                       >
-                        <span className={`text-[10px] w-6 ${isLinkActive ? 'text-sky-400' : 'text-zinc-600'}`}>{l.num}</span>
-                        <span
-                          className={`flex-1 text-[22px] leading-none tracking-tight transition-colors ${
-                            isLinkActive ? 'text-white font-semibold' : 'text-zinc-400 group-active:text-white'
-                          }`}
+                        <Link
+                          href={targetHref}
+                          onClick={(e) => {
+                            setMobileOpen(false);
+                            handleNavClick(l.section, l.href, e);
+                          }}
+                          className="group relative flex items-center gap-4 py-3.5 border-b border-white/[0.07] cursor-pointer"
+                        >
+                          <span className={`text-[10px] w-6 ${isLinkActive ? 'text-sky-400' : 'text-zinc-600'}`}>{l.num}</span>
+                          <span
+                            className={`flex-1 text-[22px] leading-none tracking-tight transition-colors ${isLinkActive ? 'text-white font-semibold' : 'text-zinc-400 group-active:text-white'
+                              }`}
+                          >
+                            {l.name}
+                          </span>
+                          {isLinkActive ? (
+                            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_10px_#38bdf8]" />
+                          ) : (
+                            <span className="text-zinc-600 text-sm group-active:translate-x-1 transition-transform">&rarr;</span>
+                          )}
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Mobile Actions Footer */}
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.25 }}
+                  className="pt-5 flex items-center gap-2.5"
+                >
+                  {socials.map((s) => {
+                    const Icon = s.icon;
+                    return (
+                      <a
+                        key={s.name}
+                        href={s.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-11 h-11 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center text-zinc-300 active:scale-95 transition-all cursor-pointer"
+                        title={s.name}
+                      >
+                        <Icon className="text-base" />
+                      </a>
+                    );
+                  })}
+
+                  <a
+                    href="/resume.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 h-11 flex items-center justify-center rounded-xl border border-white/20 bg-white text-black text-xs font-mono font-semibold uppercase tracking-widest active:scale-[0.98] transition-transform cursor-pointer"
+                  >
+                    Resume ↗
+                  </a>
+                </motion.div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* ── MOBILE FLOATING DOCK ── */}
+        <div
+          className="fixed inset-x-0 z-[90] lg:hidden flex justify-center px-2 pointer-events-none"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 14px)' }}
+        >
+          <AnimatePresence>
+            {!isDesktop && isHome && scrolled && !mobileOpen && !searchOpen && (
+              <motion.nav
+                initial={{ y: 80, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 80, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 320, damping: 30 }}
+                className="pointer-events-auto max-w-full flex items-center gap-0.5 p-1.5 rounded-full border border-white/15 shadow-[0_10px_40px_rgba(0,0,0,0.7)]"
+                style={{ background: 'rgba(8,9,12,0.88)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+                aria-label="Section navigation"
+              >
+                {navLinks.map((l) => {
+                  const id = l.name.toLowerCase();
+                  const active = activeSection === l.section;
+                  return (
+                    <Link
+                      key={l.name}
+                      href={l.href ? l.href : `/#${l.section}`}
+                      onClick={(e) => handleNavClick(l.section, l.href, e)}
+                      aria-label={l.name}
+                      className="relative flex items-center gap-1.5 h-10 px-3 rounded-full select-none"
+                    >
+                      {active && (
+                        <motion.span
+                          layoutId="dock-pill"
+                          transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                          className="absolute inset-0 rounded-full bg-white/12 border border-white/25 shadow-[0_0_16px_rgba(255,255,255,0.15)]"
+                        />
+                      )}
+                      <span className={`relative z-10 ${active ? 'text-white' : 'text-zinc-500'}`}><NavIcon id={id} /></span>
+                      {active && (
+                        <motion.span
+                          initial={{ width: 0, opacity: 0 }}
+                          animate={{ width: 'auto', opacity: 1 }}
+                          className="relative z-10 overflow-hidden whitespace-nowrap text-[10px] font-mono uppercase tracking-[0.14em] text-white"
                         >
                           {l.name}
-                        </span>
-                        {isLinkActive ? (
-                          <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_10px_#38bdf8]" />
-                        ) : (
-                          <span className="text-zinc-600 text-sm group-active:translate-x-1 transition-transform">&rarr;</span>
-                        )}
-                      </Link>
-                    </motion.div>
+                        </motion.span>
+                      )}
+                    </Link>
                   );
                 })}
-              </div>
-
-              {/* Mobile Actions Footer */}
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.25 }}
-                className="pt-5 flex items-center gap-2.5"
-              >
-                {socials.map((s) => {
-                  const Icon = s.icon;
-                  return (
-                    <a
-                      key={s.name}
-                      href={s.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-11 h-11 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center text-zinc-300 active:scale-95 transition-all cursor-pointer"
-                      title={s.name}
-                    >
-                      <Icon className="text-base" />
-                    </a>
-                  );
-                })}
-
-                <a
-                  href="/resume.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex-1 h-11 flex items-center justify-center rounded-xl border border-white/20 bg-white text-black text-xs font-mono font-semibold uppercase tracking-widest active:scale-[0.98] transition-transform cursor-pointer"
-                >
-                  Resume ↗
-                </a>
-              </motion.div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* ── MOBILE FLOATING DOCK ── */}
-      <AnimatePresence>
-        {!isDesktop && isHome && scrolled && !mobileOpen && !searchOpen && (
-          <motion.nav
-            initial={{ y: 80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-            className="fixed left-1/2 -translate-x-1/2 z-[90] lg:hidden flex items-center gap-0.5 p-1.5 rounded-full border border-white/15 shadow-[0_10px_40px_rgba(0,0,0,0.7)]"
-            style={{ bottom: 'calc(env(safe-area-inset-bottom) + 14px)', background: 'rgba(8,9,12,0.88)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
-            aria-label="Section navigation"
-          >
-            {navLinks.map((l) => {
-              const id = l.name.toLowerCase();
-              const active = activeSection === l.section;
-              return (
-                <Link
-                  key={l.name}
-                  href={l.href ? l.href : `/#${l.section}`}
-                  onClick={(e) => handleNavClick(l.section, l.href, e)}
-                  aria-label={l.name}
-                  className="relative flex items-center gap-1.5 h-10 px-3 rounded-full select-none"
-                >
-                  {active && (
-                    <motion.span
-                      layoutId="dock-pill"
-                      transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-                      className="absolute inset-0 rounded-full bg-white/12 border border-white/25 shadow-[0_0_16px_rgba(255,255,255,0.15)]"
-                    />
-                  )}
-                  <span className={`relative z-10 ${active ? 'text-white' : 'text-zinc-500'}`}><NavIcon id={id} /></span>
-                  {active && (
-                    <motion.span
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: 'auto', opacity: 1 }}
-                      className="relative z-10 overflow-hidden whitespace-nowrap text-[10px] font-mono uppercase tracking-[0.14em] text-white"
-                    >
-                      {l.name}
-                    </motion.span>
-                  )}
-                </Link>
-              );
-            })}
-          </motion.nav>
-        )}
-      </AnimatePresence>
+              </motion.nav>
+            )}
+          </AnimatePresence>
+        </div>
       </Portal>
     </>
   );

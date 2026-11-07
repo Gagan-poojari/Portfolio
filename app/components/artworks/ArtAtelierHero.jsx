@@ -1,124 +1,194 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { FaDice, FaPencilAlt, FaFire } from 'react-icons/fa';
+import { ARTWORKS_DATA, TOTAL_HOURS, LONGEST_HOURS, YEAR_SPAN } from '../../artworks/artworksData';
 
-export default function ArtAtelierHero({ 
-  activeCategory, 
-  setActiveCategory, 
-  onSurpriseMe, 
-  onOpenSandbox 
-}) {
-  const categories = [
-    { id: 'all', label: 'All Works' },
-    { id: 'portrait', label: 'Portraits' },
-    { id: 'sports', label: 'Sports' },
-    { id: 'spiritual', label: 'Fine Art' },
-  ];
+const CATEGORIES = [
+  { id: 'all', label: 'All' },
+  { id: 'portrait', label: 'Portraits' },
+  { id: 'sports', label: 'Sports' },
+  { id: 'spiritual', label: 'Fine art' },
+];
+
+const countFor = (id) =>
+  id === 'all'
+    ? ARTWORKS_DATA.length
+    : ARTWORKS_DATA.filter((a) => (id === 'spiritual' ? a.categorySlug === 'spiritual' || a.categorySlug === 'surrealism' : a.categorySlug === id)).length;
+
+// Move your cursor (or finger) across the hero and it leaves a graphite smudge that slowly fades.
+function Smudge({ hostRef }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    const canvas = canvasRef.current;
+    if (!host || !canvas) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const ctx = canvas.getContext('2d');
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = 0, h = 0, last = null, raf = 0, idle = 0, running = false;
+
+    const size = () => {
+      w = host.offsetWidth;
+      h = host.offsetHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    size();
+    const ro = new ResizeObserver(size);
+    ro.observe(host);
+
+    const frame = () => {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = 'rgba(0,0,0,0.018)';
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'source-over';
+      idle++;
+      if (idle > 420) {
+        running = false;
+        ctx.clearRect(0, 0, w, h);
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    };
+
+    const move = (e) => {
+      const r = host.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+      if (x < 0 || y < 0 || x > r.width || y > r.height) {
+        last = null;
+        return;
+      }
+      if (last) {
+        ctx.strokeStyle = 'rgba(214,214,220,0.11)';
+        ctx.lineWidth = 18 + Math.random() * 12;
+        ctx.lineCap = 'round';
+        ctx.shadowColor = 'rgba(214,214,220,0.35)';
+        ctx.shadowBlur = 22;
+        ctx.beginPath();
+        ctx.moveTo(last.x, last.y);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      }
+      last = { x, y };
+      idle = 0;
+      if (!running) {
+        running = true;
+        raf = requestAnimationFrame(frame);
+      }
+    };
+    const leave = () => { last = null; };
+
+    window.addEventListener('pointermove', move, { passive: true });
+    host.addEventListener('pointerleave', leave);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      window.removeEventListener('pointermove', move);
+      host.removeEventListener('pointerleave', leave);
+    };
+  }, [hostRef]);
+
+  return <canvas ref={canvasRef} aria-hidden className="pointer-events-none absolute inset-0 w-full h-full" />;
+}
+
+export default function ArtAtelierHero({ activeCategory, setActiveCategory, onSurpriseMe }) {
+  const hostRef = useRef(null);
 
   return (
-    <section className="relative pt-32 sm:pt-40 pb-16 px-4 sm:px-6 lg:px-8 border-b border-white/10 overflow-hidden font-body">
-      
-      {/* Subtle organic studio vignette */}
-      <div 
-        className="pointer-events-none absolute inset-0 opacity-30"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 50% 15%, rgba(255, 255, 255, 0.08) 0%, transparent 55%),
-            radial-gradient(circle at 85% 85%, rgba(199, 6, 28, 0.04) 0%, transparent 40%),
-            radial-gradient(circle at 15% 85%, rgba(41, 123, 201, 0.04) 0%, transparent 40%)
-          `
-        }}
-      />
+    <section ref={hostRef} className="relative overflow-hidden pt-32 sm:pt-40 pb-14 px-4 sm:px-6 lg:px-8 border-b border-white/10">
+      <Smudge hostRef={hostRef} />
 
-      <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
-        
-        {/* Human Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm text-xs font-mono text-zinc-300"
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>0% Prompts &bull; 100% Pencils &amp; Smudged Fingers</span>
-        </motion.div>
-
-        {/* Hero Title */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="space-y-3"
-        >
-          <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl tracking-wider text-white uppercase leading-[0.95]">
-            Drawn By Hand.
-          </h1>
-          <p className="font-display text-2xl sm:text-3xl text-zinc-400 tracking-wide uppercase">
-            Charcoal, Graphite &amp; 140+ Hours of Pure Focus
-          </p>
-        </motion.div>
-
-        {/* Human Subtitle */}
+      <div className="relative max-w-7xl mx-auto">
         <motion.p
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="max-w-2xl mx-auto text-sm sm:text-base text-zinc-300 leading-relaxed font-normal"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className="font-mono text-xs text-zinc-500 mb-5"
         >
-          I build software by day and sketch with pencils by night. In a world where AI creates images in 3 seconds, these are 5 pieces that took 30+ hours of squinting at paper with an 8B pencil, blending with tortillons, and rubbing charcoal on my jeans.
+          sketchbook / {YEAR_SPAN}
         </motion.p>
 
-        {/* Quick Action Pills for Visitors */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex flex-wrap items-center justify-center gap-3 pt-2"
+          transition={{ duration: 0.6, delay: 0.05 }}
+          className="font-display text-[clamp(3rem,11vw,8.5rem)] leading-[0.92] text-white"
         >
-          <button
-            onClick={onSurpriseMe}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium transition-all shadow-sm cursor-pointer"
-          >
-            <FaDice className="text-sm text-amber-400" />
-            <span>Surprise Me (Random Pick)</span>
-          </button>
+          Pencil <span className="text-zinc-500">&amp;</span>
+          <br />
+          <span className="relative inline-block">
+            charcoal.
+            <svg viewBox="0 0 400 18" preserveAspectRatio="none" className="absolute left-0 -bottom-1 w-full h-3 sm:h-4 overflow-visible" aria-hidden>
+              <motion.path
+                d="M3 11 C 70 3, 140 15, 210 8 S 340 4, 397 10"
+                fill="none"
+                stroke="#e8dfc8"
+                strokeWidth="3"
+                strokeLinecap="round"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 1.1, delay: 0.7, ease: 'easeInOut' }}
+              />
+            </svg>
+          </span>
+        </motion.h1>
 
-          <button
-            onClick={onOpenSandbox}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-semibold transition-all shadow-md cursor-pointer"
-          >
-            <FaPencilAlt className="text-xs" />
-            <span>Doodle in my Sketchpad</span>
-          </button>
-        </motion.div>
-
-        {/* Category Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-wrap items-center justify-center gap-2 pt-4"
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-8 max-w-xl text-base sm:text-lg text-zinc-300 leading-relaxed"
         >
-          {categories.map((cat) => {
+          I write code for a living and draw when I want my head to go quiet. Mostly portraits, a few sports pieces, a couple of odd ones. All graphite or charcoal on paper.
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          className="mt-6 font-mono text-xs sm:text-sm text-zinc-400"
+        >
+          {/* {ARTWORKS_DATA.length}+ drawings &nbsp;/&nbsp; {TOTAL_HOURS} hours &nbsp;/&nbsp; longest took {LONGEST_HOURS} */}
+          {ARTWORKS_DATA.length}+ drawings &nbsp;/&nbsp; 100+ hours
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.45 }}
+          className="mt-12 flex flex-wrap items-center gap-x-7 gap-y-3 text-sm"
+        >
+          {CATEGORIES.map((cat) => {
             const active = activeCategory === cat.id;
             return (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-1.5 rounded-full text-xs transition-all duration-200 cursor-pointer ${
-                  active
-                    ? 'bg-white text-black font-semibold shadow-sm'
-                    : 'bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/10 border border-white/10'
-                }`}
+                className={`relative pb-1.5 transition-colors cursor-pointer ${active ? 'text-white' : 'text-zinc-500 hover:text-zinc-200'}`}
               >
                 {cat.label}
+                <sup className="ml-0.5 font-mono text-[10px] text-zinc-600">{countFor(cat.id)}</sup>
+                {active && <motion.span layoutId="cat-underline" className="absolute left-0 right-0 bottom-0 h-px bg-[#e8dfc8]" />}
               </button>
             );
           })}
-        </motion.div>
 
+          <button
+            onClick={onSurpriseMe}
+            className="ml-auto text-zinc-400 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white/60 transition-colors cursor-pointer"
+          >
+            pick one for me &rarr;
+          </button>
+        </motion.div>
       </div>
+
+      <p className="pointer-events-none absolute right-6 sm:right-12 top-36 sm:top-44 rotate-[6deg] font-handwriting text-lg text-zinc-500 [@media(hover:none)]:hidden hidden md:block">
+        go on, smudge the page
+      </p>
     </section>
   );
 }

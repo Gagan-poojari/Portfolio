@@ -21,20 +21,29 @@ const MERN_EDGES = [
 ];
 
 // ── AI & ML NEURAL TOPOLOGY (RED THEME) ───────────────────────────────────────
-// Layered Neural Topology: Input Layer -> Tensor Engine -> Inference Output
+// Radial Star Topology: Python Nexus in the Center connecting to all AI/ML nodes
 const AIML_NODES = [
-  { id: 0, name: 'Python', icon: '/icons/aiml-icons/python-icon.png', tag: 'Vectorized Algorithmic Core', x: 45, y: 65 },
-  { id: 1, name: 'NumPy', icon: '/icons/aiml-icons/numpy-icon.png', tag: 'N-Dimensional Tensor Math', x: 45, y: 235 },
-  { id: 2, name: 'PyTorch', icon: '/icons/aiml-icons/pytorch-icon.png', tag: 'Deep Learning & Backprop', x: 125, y: 45 },
-  { id: 3, name: 'TensorFlow', icon: '/icons/aiml-icons/tensorflow-icon.png', tag: 'Distributed Graph Engine', x: 125, y: 165 },
-  { id: 4, name: 'OpenCV', icon: '/icons/aiml-icons/opencv-icon.webp', tag: 'Real-Time Computer Vision', x: 200, y: 95 },
-  { id: 5, name: 'Scikit-Learn', icon: '/icons/aiml-icons/scikit-learn-icon.png', tag: 'Predictive Inference Models', x: 200, y: 245 },
+  { id: 0, name: 'Python', icon: '/icons/aiml-icons/python-icon.png', tag: 'Central Algorithmic & Neural Nexus', x: 125, y: 170 },
+  { id: 1, name: 'PyTorch', icon: '/icons/aiml-icons/pytorch-icon.png', tag: 'Deep Learning & Dynamic Tensors', x: 125, y: 55 },
+  { id: 2, name: 'OpenCV', icon: '/icons/aiml-icons/opencv-icon.webp', tag: 'Real-Time Computer Vision', x: 212, y: 110 },
+  { id: 3, name: 'Scikit-Learn', icon: '/icons/aiml-icons/scikit-learn-icon.png', tag: 'Predictive Machine Learning', x: 198, y: 255 },
+  { id: 4, name: 'NumPy', icon: '/icons/aiml-icons/numpy-icon.png', tag: 'N-Dimensional Tensor Math', x: 52, y: 255 },
+  { id: 5, name: 'TensorFlow', icon: '/icons/aiml-icons/tensorflow-icon.png', tag: 'Distributed Graph Execution', x: 38, y: 110 },
 ];
 
 const AIML_EDGES = [
-  [0, 2], [0, 3], [1, 3],
-  [2, 3], [2, 4], [3, 4],
-  [3, 5], [4, 5], [1, 5],
+  // Radial spokes: ALL nodes connect directly to central Python (id: 0)
+  [0, 1], // Python -> PyTorch
+  [0, 2], // Python -> OpenCV
+  [0, 3], // Python -> Scikit-Learn
+  [0, 4], // Python -> NumPy
+  [0, 5], // Python -> TensorFlow
+  // Outer perimeter constellation
+  [1, 2], // PyTorch <-> OpenCV
+  [2, 3], // OpenCV <-> Scikit-Learn
+  [3, 4], // Scikit-Learn <-> NumPy
+  [4, 5], // NumPy <-> TensorFlow
+  [5, 1], // TensorFlow <-> PyTorch
 ];
 
 // ── DYNAMIC ELASTIC GRAPH COMPONENT ──────────────────────────────────────────
@@ -100,10 +109,12 @@ function DynamicWebGraph({ nodes, edges, colorTheme, activeNodeId, setActiveNode
 
       {/* Movable Interactive Icon Nodes */}
       {nodes.map((node) => {
+        const isCenterHub = node.name === 'Python';
+
         return (
           <div
             key={node.name}
-            className="absolute z-10"
+            className={`absolute ${isCenterHub ? 'z-20' : 'z-10'}`}
             style={{
               left: `${node.x}px`,
               top: `${node.y}px`,
@@ -121,8 +132,10 @@ function DynamicWebGraph({ nodes, edges, colorTheme, activeNodeId, setActiveNode
               onMouseLeave={() => setActiveNodeId(null)}
               whileHover={{ scale: 1.25 }}
               whileTap={{ scale: 0.92 }}
-              className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#080910]/95 border border-white/15 ${borderHover} backdrop-blur-2xl flex items-center justify-center p-2.5 shadow-[0_4px_24px_rgba(0,0,0,0.85)] cursor-grab active:cursor-grabbing transition-colors touch-none`}
-              title="Drag me!"
+              className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#080910]/95 border ${
+                isCenterHub ? 'border-red-500/50 shadow-[0_0_22px_rgba(239,68,68,0.4)]' : 'border-white/15'
+              } ${borderHover} backdrop-blur-2xl flex items-center justify-center p-2.5 shadow-[0_4px_24px_rgba(0,0,0,0.85)] cursor-grab active:cursor-grabbing transition-colors touch-none`}
+              title={isCenterHub ? 'Python Hub - Drag me!' : 'Drag me!'}
             >
               <Image
                 src={node.icon}
@@ -367,7 +380,7 @@ function MobileStage() {
           }`}
         >
           <span className={`w-1.5 h-1.5 rounded-full ${isBlue ? 'bg-sky-400 shadow-[0_0_6px_#38bdf8]' : 'bg-zinc-600'}`} />
-          MERN &bull; Cloud
+          Web Dev
         </button>
         <button
           onClick={() => switchEngine('aiml')}
@@ -376,7 +389,7 @@ function MobileStage() {
           }`}
         >
           <span className={`w-1.5 h-1.5 rounded-full ${!isBlue ? 'bg-red-400 shadow-[0_0_6px_#ef4444]' : 'bg-zinc-600'}`} />
-          AI &bull; ML
+          AI & ML
         </button>
       </div>
     </div>
@@ -444,7 +457,7 @@ export default function HeroMasterpiece() {
         <div className="col-span-3 flex flex-col items-start space-y-2">
           <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-sky-500/30 text-sky-300 font-mono text-[10px] tracking-[0.2em] uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_#38bdf8]" />
-            <span>MERN &bull; CLOUD ARCHITECTURE</span>
+            <span>Web Dev</span>
           </div>
 
           <DynamicWebGraph
@@ -539,7 +552,7 @@ export default function HeroMasterpiece() {
         <div className="col-span-3 flex flex-col items-end space-y-2">
           <div className="flex items-center gap-2 px-3 py-1 mr-7 rounded-full border border-red-500/30 text-red-300 font-mono text-[10px] tracking-[0.2em] uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-red-400 shadow-[0_0_8px_#ef4444]" />
-            <span>AI &bull; MACHINE LEARNING</span>
+            <span>AI & ML</span>
           </div>
 
           <DynamicWebGraph
