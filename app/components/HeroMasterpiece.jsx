@@ -358,37 +358,6 @@ function MobileStage() {
         <OrbitLayer key={engine} nodes={nodes} isBlue={isBlue} activeId={activeId} onPick={pick} />
       </div>
 
-      {/* Info card */}
-      <div className="h-[52px] mt-1 w-full max-w-[340px] flex items-center justify-center">
-        <AnimatePresence mode="wait">
-          {activeNode ? (
-            <motion.div
-              key={activeNode.name}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.18 }}
-              className={`px-4 py-2 rounded-2xl border backdrop-blur-xl text-center font-mono ${
-                isBlue ? 'bg-sky-500/10 border-sky-400/40 text-sky-200' : 'bg-red-500/10 border-red-400/40 text-red-200'
-              }`}
-            >
-              <p className="text-[12px] font-bold text-white leading-tight">{activeNode.name}</p>
-              <p className="text-[10px] opacity-90 leading-tight mt-0.5">{activeNode.tag}</p>
-            </motion.div>
-          ) : (
-            <motion.p
-              key="hint"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.6 }}
-              exit={{ opacity: 0 }}
-              className="font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 text-center"
-            >
-              tap an icon &bull; touch me for color
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
-
       {/* Engine switcher */}
       <div className="flex items-center gap-1.5 p-1 rounded-full bg-black/60 border border-white/15 backdrop-blur-xl shadow-lg z-20">
         <button
