@@ -31,14 +31,19 @@
     next/font/google (layout.js) onto the <body> element at runtime.
     We reference them here so all components pick them up automatically.
   */
-  --font-display:   var(--font-bebas), 'Transformers Movie', sans-serif;
-  --font-body:      var(--font-dm-sans), 'ClashDisplay', sans-serif;
-  --font-mono:      var(--font-jetbrains), monospace;
-  --font-clash:     'ClashDisplay', sans-serif;
-  --font-tf:        'Transformers Movie', sans-serif;
+  --font-display:      var(--font-bebas), 'Transformers Movie', sans-serif;
+  --font-body:         var(--font-dm-sans), 'ClashDisplay', sans-serif;
+  --font-mono:         var(--font-jetbrains), monospace;
+  --font-handwriting:  var(--font-caveat), 'Caveat', cursive;
+  --font-clash:        'ClashDisplay', sans-serif;
+  --font-tf:           'Transformers Movie', sans-serif;
 
   --blue:  #297bc9;
   --red:   #c7061c;
+}
+
+.font-handwriting {
+  font-family: var(--font-caveat), 'Caveat', cursive;
 }
 
 /* ── Base ────────────────────────────────────────────── */

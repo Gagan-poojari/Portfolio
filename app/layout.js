@@ -1,4 +1,4 @@
-import { Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
+import { Bebas_Neue, DM_Sans, JetBrains_Mono, Caveat } from "next/font/google";
 import "./globals.css";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Analytics } from '@vercel/analytics/react';
@@ -27,6 +27,14 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains",
   subsets: ["latin"],
   weight: ["300", "400", "500"],
+  display: "swap",
+  preload: true,
+});
+
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
   preload: true,
 });
@@ -78,7 +86,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${bebasNeue.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${bebasNeue.variable} ${dmSans.variable} ${jetbrainsMono.variable} ${caveat.variable} antialiased`}
       >
         {children}
 

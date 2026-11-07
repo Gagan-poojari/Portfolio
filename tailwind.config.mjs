@@ -7,6 +7,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        handwriting: ["var(--font-caveat)", "cursive"],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
