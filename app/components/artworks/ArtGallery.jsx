@@ -1,16 +1,14 @@
 'use client';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaMicrophone } from 'react-icons/fa';
 import { useArtworkLikes } from '../../artworks/useArtworkLikes';
-import { hoursOf } from '../../artworks/artworksData';
 
 const TILTS = [-1.4, 0.9, -0.6, 1.2, -1];
 
 export default function ArtGallery({ artworks, activeCategory, onSelectArtwork, likeControls }) {
   const fallbackLikes = useArtworkLikes();
   const { isLiked, getLikeCount, toggleLike } = likeControls || fallbackLikes;
-  const [sort, setSort] = useState('newest');
 
   const list = useMemo(() => {
     const numbered = artworks.map((a, i) => ({ ...a, no: i + 1 }));
@@ -22,10 +20,8 @@ export default function ArtGallery({ artworks, activeCategory, onSelectArtwork, 
               ? a.categorySlug === 'spiritual' || a.categorySlug === 'surrealism'
               : a.categorySlug === activeCategory
           );
-    return [...filtered].sort((a, b) =>
-      sort === 'hours' ? hoursOf(b) - hoursOf(a) : Number(b.year) - Number(a.year)
-    );
-  }, [artworks, activeCategory, sort]);
+    return filtered;
+  }, [artworks, activeCategory]);
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -33,30 +29,13 @@ export default function ArtGallery({ artworks, activeCategory, onSelectArtwork, 
         <div>
           <p className="font-mono text-xs text-zinc-500">the work</p>
           <p className="font-handwriting text-xl text-zinc-400 mt-1 -rotate-1">
-            tap one to get close. there are notes pinned on them.
+            tap one to get close.
           </p>
         </div>
 
-        <div className="flex items-center gap-4 text-xs font-mono text-zinc-500">
-          <span>sort</span>
-          {[
-            { id: 'newest', label: 'newest' },
-            { id: 'hours', label: 'most hours' },
-          ].map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setSort(s.id)}
-              className={`pb-0.5 border-b transition-colors cursor-pointer ${
-                sort === s.id ? 'text-white border-[#e8dfc8]' : 'border-transparent hover:text-zinc-200'
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
       </div>
 
-      <div key={`${activeCategory}-${sort}`} className="columns-1 sm:columns-2 lg:columns-3 gap-x-10 lg:gap-x-14">
+      <div key={activeCategory} className="columns-1 sm:columns-2 lg:columns-3 gap-x-10 lg:gap-x-14">
         {list.map((art, idx) => {
           const liked = isLiked(art.id);
           const count = getLikeCount(art.id);
@@ -88,10 +67,15 @@ export default function ArtGallery({ artworks, activeCategory, onSelectArtwork, 
               <div className="mt-6 px-1 flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="font-mono text-[11px] text-zinc-500">
-                    No. {String(art.no).padStart(2, '0')} &middot; {art.year} &middot; {hoursOf(art)}h
+                    No. {String(art.no).padStart(2, '0')} &middot; {art.category}
                   </p>
                   <h3 className="font-display text-2xl text-white mt-1">{art.title}</h3>
-                  <p className="font-handwriting text-lg text-[#e8dfc8]/90 leading-snug mt-1">{art.caption}</p>
+                  {art.words && <p className="font-handwriting text-lg text-[#e8dfc8]/90 leading-snug mt-1">{art.words}</p>}
+                  {art.voice && (
+                    <p className="mt-2 inline-flex items-center gap-1.5 font-mono text-[11px] text-zinc-400">
+                      <FaMicrophone className="text-[10px]" /> voice note inside
+                    </p>
+                  )}
                 </div>
 
                 <button
@@ -103,7 +87,7 @@ export default function ArtGallery({ artworks, activeCategory, onSelectArtwork, 
                   }`}
                 >
                   {liked ? <FaHeart /> : <FaRegHeart />}
-                  {count > 0 && <span className="font-mono tabular-nums">{count}</span>}
+                  <span className="font-mono tabular-nums">{count}</span>
                 </button>
               </div>
             </motion.article>

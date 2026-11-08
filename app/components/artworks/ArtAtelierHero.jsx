@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ARTWORKS_DATA, TOTAL_HOURS, LONGEST_HOURS, YEAR_SPAN } from '../../artworks/artworksData';
+import { ARTWORKS_DATA } from '../../artworks/artworksData';
 
 const CATEGORIES = [
   { id: 'all', label: 'All' },
@@ -109,7 +109,8 @@ export default function ArtAtelierHero({ activeCategory, setActiveCategory, onSu
           transition={{ duration: 0.6 }}
           className="font-mono text-xs text-zinc-500 mb-5"
         >
-          sketchbook / {YEAR_SPAN}
+          {/* sketchbook / {YEAR_SPAN} */}
+          sketchbook / can't remember the date -- present
         </motion.p>
 
         <motion.h1

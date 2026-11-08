@@ -22,7 +22,7 @@ export default function SocialShareModal({ isOpen, onClose, artwork }) {
     : 'https://gagan-poojari.me/artworks';
 
   const title = `"${artwork.title}" — pencil drawing by Gagan Poojari`;
-  const text = `"${artwork.title}", drawn by hand in ${artwork.medium.toLowerCase()} by Gagan Poojari.`;
+  const text = `"${artwork.title}", a pencil drawing by Gagan Poojari.`;
 
   const handleCopyLink = () => {
     if (navigator.clipboard) {
@@ -106,7 +106,7 @@ export default function SocialShareModal({ isOpen, onClose, artwork }) {
             />
             <div>
               <h4 className="text-xs font-bold text-white">{artwork.title}</h4>
-              <p className="text-[10px] text-white/50">{artwork.medium}</p>
+              <p className="text-[10px] text-white/50">{artwork.category}</p>
             </div>
           </div>
 

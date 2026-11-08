@@ -6,6 +6,8 @@ import {
   FaHeart, FaRegHeart, FaSearch, FaAdjust, FaLayerGroup, FaDrawPolygon, FaBorderAll, FaHistory,
 } from 'react-icons/fa';
 import SocialShareModal from './SocialShareModal';
+import VoiceNote from './VoiceNote';
+import { AmbientGlow, Signature, DeskScene, ContactSheet, Tally } from './StudioPanel';
 import { handleDownloadImage } from '../../artworks/downloadHelper';
 import { useArtworkLikes } from '../../artworks/useArtworkLikes';
 import { analyzeImage } from '../../artworks/imagestudy';
@@ -25,7 +27,6 @@ export default function ArtworkModal({ artwork, artworks = [], onSelectArtwork, 
   const [grid, setGrid] = useState(false);
   const [gridRows, setGridRows] = useState(5);
   const [study, setStudy] = useState(null);
-  const [marker, setMarker] = useState(null);
   const [loupe, setLoupe] = useState(false);
   const [loupePos, setLoupePos] = useState({ x: 0, y: 0, w: 0, h: 0, show: false, touch: false });
   const [process, setProcess] = useState(false);
@@ -52,20 +53,13 @@ export default function ArtworkModal({ artwork, artworks = [], onSelectArtwork, 
     setSplit(50);
   }, [artwork?.id, resetView]);
 
-  // Measure the drawing's actual pixels (edge map, tonal range, brightest spot)
+  // Edge map for the Lines view
   useEffect(() => {
     let alive = true;
     setStudy(null);
-    setMarker(null);
     analyzeImage(artwork.image).then((r) => alive && setStudy(r)).catch(() => {});
     return () => { alive = false; };
   }, [artwork?.image]);
-
-  useEffect(() => {
-    if (!marker) return;
-    const t = setTimeout(() => setMarker(null), 2800);
-    return () => clearTimeout(t);
-  }, [marker]);
 
   const go = useCallback(
     (dir) => {
@@ -169,11 +163,11 @@ export default function ArtworkModal({ artwork, artworks = [], onSelectArtwork, 
   const hasWip = Boolean(artwork.wip);
 
   const tools = [
-        { id: 'edges', icon: FaDrawPolygon, label: 'Lines', on: mode === 'edges', run: () => setMode((m) => (m === 'edges' ? 'none' : 'edges')), hint: 'E' },
+        // { id: 'edges', icon: FaDrawPolygon, label: 'Lines', on: mode === 'edges', run: () => setMode((m) => (m === 'edges' ? 'none' : 'edges')), hint: 'E' },
     { id: 'grid', icon: FaBorderAll, label: 'Grid', on: grid, run: () => setGrid((v) => !v), hint: 'G' },
     { id: 'loupe', icon: FaSearch, label: 'Loupe', on: loupe, run: () => { setLoupe((v) => !v); resetView(); }, hint: 'L' },
     { id: 'squint', icon: FaAdjust, label: 'Squint', on: mode === 'squint', run: () => setMode((m) => (m === 'squint' ? 'none' : 'squint')), hint: 'S' },
-    { id: 'values', icon: FaLayerGroup, label: 'Values', on: mode === 'values', run: () => setMode((m) => (m === 'values' ? 'none' : 'values')), hint: 'V' },
+    // { id: 'values', icon: FaLayerGroup, label: 'Values', on: mode === 'values', run: () => setMode((m) => (m === 'values' ? 'none' : 'values')), hint: 'V' },
     ...(hasWip ? [{ id: 'process', icon: FaHistory, label: 'Process', on: process, run: () => setProcess((v) => !v), hint: '' }] : []),
   ];
 
@@ -312,20 +306,6 @@ export default function ArtworkModal({ artwork, artworks = [], onSelectArtwork, 
                   }}
                 />
               )}
-
-              {/* Brightest-spot marker */}
-              {marker && (
-                <span
-                  className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
-                >
-                  <span className="absolute -inset-5 rounded-full border-2 border-red-500 animate-ping" />
-                  <span
-                    className="block h-12 w-12 border-2 border-red-500"
-                    style={{ borderRadius: '52% 48% 55% 45% / 50% 55% 45% 50%' }}
-                  />
-                </span>
-              )}
             </div>
 
             {/* Viewing tools */}
@@ -354,58 +334,21 @@ export default function ArtworkModal({ artwork, artworks = [], onSelectArtwork, 
           </div>
 
           {/* ── Info ── */}
-          <div className="flex-1 lg:flex-none lg:w-[400px] overflow-y-auto p-6 lg:p-8 flex flex-col gap-7 border-t lg:border-t-0 lg:border-l border-white/10">
+          <div className="relative flex-1 lg:flex-none lg:w-[400px] min-h-0 overflow-hidden border-t lg:border-t-0 lg:border-l border-white/10">
+            <AmbientGlow src={artwork.image} />
+            <div className="relative h-full overflow-y-auto p-6 lg:p-8 flex flex-col gap-6">
             <div>
-              <p className="font-mono text-xs text-zinc-500">No. {String(idx + 1).padStart(2, '0')} &middot; {artwork.year} &middot; {artwork.category}</p>
+              <p className="font-mono text-xs text-zinc-500">
+                No. {String(idx + 1).padStart(2, '0')} &middot; {artwork.category}{artwork.size ? ` · ${artwork.size}` : ''}
+              </p>
               <h2 className="font-display text-4xl text-white mt-2 leading-none">{artwork.title}</h2>
-              <p className="text-sm text-zinc-400 mt-2">{artwork.subtitle}</p>
+              <Signature id={artwork.id} />
             </div>
-
-            <p className="text-[15px] leading-relaxed text-zinc-200">{artwork.story}</p>
-
-            {artwork.funFact && (
-              <p className="font-handwriting text-xl leading-snug text-[#e8dfc8] -rotate-1">&#8627; {artwork.funFact}</p>
-            )}
-
-            {study && (
-              <div>
-                <p className="font-mono text-[11px] uppercase text-zinc-500 mb-3">Tonal range</p>
-                <div className="flex items-end gap-[2px] h-12" aria-hidden>
-                  {study.hist.map((v, i) => (
-                    <span
-                      key={i}
-                      className="flex-1 rounded-[1px]"
-                      style={{
-                        height: `${Math.max(3, Math.sqrt(v) * 100)}%`,
-                        background: `rgb(${Math.round((i / 23) * 215 + 30)},${Math.round((i / 23) * 210 + 30)},${Math.round((i / 23) * 200 + 30)})`,
-                      }}
-                    />
-                  ))}
-                </div>
-                <div className="mt-2 flex items-center justify-between text-xs text-zinc-500 font-mono">
-                  <span>{study.darkPct}% of the sheet is near-black</span>
-                  <button
-                    onClick={() => setMarker({ x: study.bright.x, y: study.bright.y })}
-                    className="text-zinc-300 hover:text-white underline underline-offset-4 decoration-white/20 cursor-pointer"
-                  >
-                    find the brightest spot
-                  </button>
-                </div>
+              <div className="mt-auto space-y-4">
+              <div className="flex items-center gap-3">
+                <Tally n={count} />
+                <span className="font-handwriting text-lg text-zinc-400 shrink-0">{count} hearts</span>
               </div>
-            )}
-
-            <dl className="grid grid-cols-[76px_1fr] gap-x-4 gap-y-3 text-sm">
-              <dt className="font-mono text-[11px] uppercase text-zinc-500 pt-0.5">Time</dt>
-              <dd className="text-zinc-200">{artwork.timeSpent}</dd>
-              <dt className="font-mono text-[11px] uppercase text-zinc-500 pt-0.5">Medium</dt>
-              <dd className="text-zinc-200">{artwork.medium}</dd>
-              <dt className="font-mono text-[11px] uppercase text-zinc-500 pt-0.5">Tools</dt>
-              <dd className="text-zinc-200">{artwork.pencils}</dd>
-              <dt className="font-mono text-[11px] uppercase text-zinc-500 pt-0.5">Size</dt>
-              <dd className="text-zinc-200">{artwork.dimensions}</dd>
-            </dl>
-
-            <div className="mt-auto space-y-4">
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={(e) => toggleLike(artwork.id, e)}
@@ -415,7 +358,7 @@ export default function ArtworkModal({ artwork, artworks = [], onSelectArtwork, 
                   }`}
                 >
                   {liked ? <FaHeart className="text-rose-500" /> : <FaRegHeart />}
-                  {count > 0 && <span className="font-mono text-xs">{count}</span>}
+                  <span className="font-mono text-xs tabular-nums">{count}</span>
                 </button>
 
                 <button
@@ -433,11 +376,15 @@ export default function ArtworkModal({ artwork, artworks = [], onSelectArtwork, 
                   <FaShareAlt className="text-sm" />
                 </button>
               </div>
-
-              <p className="hidden lg:block font-mono text-[10px] text-zinc-600 leading-relaxed">
-                &larr; &rarr; switch &middot; E lines &middot; G grid &middot; L loupe &middot; S squint &middot; V values &middot; scroll or pinch to zoom
-              </p>
             </div>
+
+            <ContactSheet artworks={artworks} activeId={artwork.id} onSelect={onSelectArtwork} />
+
+            <VoiceNote key={artwork.id} src={artwork.voice} words={artwork.words} />
+
+            <DeskScene src={artwork.image} size={artwork.size} />
+            
+          </div>
           </div>
         </motion.div>
       </div>
