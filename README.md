@@ -19,7 +19,7 @@ Built to represent two convergent engineering disciplines: **Full-Stack Distribu
 
 **Gagan Poojari**
 - **Website**: [gagan-poojari.me](https://gagan-poojari.me)
-- **Email**: [gaganpoojari872@gmail.com](mailto:gaganpoojari872@gmail.com)
+- **Email**: [gagancgp@gmail.com](mailto:gagancgp@gmail.com)
 - **GitHub**: [@Gagan-poojari](https://github.com/Gagan-poojari)
 - **LinkedIn**: [in/gaganpoojari](https://www.linkedin.com/in/gaganpoojari/)
 
