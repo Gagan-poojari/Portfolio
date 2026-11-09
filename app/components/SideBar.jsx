@@ -5,7 +5,7 @@ import { FaGithub, FaLinkedin } from 'react-icons/fa';
 
 const socials = [
   { name: 'GitHub',   url: 'https://github.com/Gagan-poojari',                      icon: FaGithub,   accent: '#ffffff' },
-  { name: 'LinkedIn', url: 'https://www.linkedin.com/in/gagan-poojari-840744319/',   icon: FaLinkedin, accent: '#297bc9' },
+  { name: 'LinkedIn', url: 'https://www.linkedin.com/in/gaganpoojari/',   icon: FaLinkedin, accent: '#297bc9' },
 ];
 
 export default function SlideBar() {

@@ -24,7 +24,7 @@ const staticCmdItems = [
   { label: 'Artworks Gallery', desc: 'Gagan’s Fine Pencil & Charcoal Sketches', href: '/artworks', type: 'page', glyph: '🎨', color: '#f59e0b' },
   { label: 'Resume',   desc: 'Open PDF in new tab',          href: '/resume.pdf',                                          type: 'action', glyph: '↗', color: '#F97316' },
   { label: 'GitHub',   desc: 'github.com/Gagan-poojari',     href: 'https://github.com/Gagan-poojari',                     type: 'social', glyph: '⌥', color: '#ffffff' },
-  { label: 'LinkedIn', desc: 'Connect on LinkedIn',          href: 'https://www.linkedin.com/in/gagan-poojari-840744319/', type: 'social', glyph: '⌘', color: '#297bc9' },
+  { label: 'LinkedIn', desc: 'Connect on LinkedIn',          href: 'https://www.linkedin.com/in/gaganpoojari/', type: 'social', glyph: '⌘', color: '#297bc9' },
 ];
 
 const TYPE_LABELS = { nav: 'nav', action: 'action', social: 'social', page: 'page' };
